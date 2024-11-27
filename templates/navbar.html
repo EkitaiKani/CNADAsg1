@@ -1,0 +1,93 @@
+{{define "navbar"}}
+
+<!-- Navbar-->
+
+  <!-- Container wrapper -->
+  <div class="container">
+    <!-- Navbar brand -->
+    <a class="navbar-brand me-2" href="index.html">
+      <img
+        src="Images/logo-removed.png"
+        width="150"
+        alt="drivachu"
+        loading="lazy"
+        style="margin-top: -1px"
+      />
+    </a>
+
+    <!-- Toggle button -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-mdb-toggle="collapse"
+      data-mdb-target="#navbarButtonsExample"
+      aria-controls="navbarButtonsExample"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Collapsible wrapper -->
+    <div class="collapse navbar-collapse" id="navbarButtonsExample">
+      <!-- Left links -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="About.html">About</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            Shop
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="Shop.html#special">Special Offers</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="Shop.html#flowers"
+              >Flower Bouquets</a
+            >
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="Shop.html#GE"
+              >Gardening Essentials</a
+            >
+          </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="Rewards.html">Rewards</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="CS.html">Customer Service</a>
+        </li>
+      </ul>
+      <!-- Left links -->
+
+      <div class="d-flex align-items-center px-3">
+        <a style="color: white" href="ShoppingCart.html" role="button"
+          ><i class="fa-solid fa-cart-shopping fa-lg"></i
+        ></a>
+      </div>
+
+      <div id="sign-up" class="d-flex align-items-center px-3">
+        <a
+          class="px-1"
+          style="color: white"
+          data-mdb-toggle="modal"
+          data-mdb-target="#login"
+          role="button"
+          ><i class="fa-solid fa-user"></i
+        ></a>
+      </div>
+    </div>
+  </div>
+<!-- Navbar -->
+{{end}}
