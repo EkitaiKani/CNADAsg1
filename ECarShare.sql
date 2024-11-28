@@ -27,10 +27,10 @@ CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,						-- Unique identifier for the user
     email VARCHAR(255) UNIQUE,									-- Email for registration (ensure uniqueness)
     phone VARCHAR(8) UNIQUE,									-- Phone number for registration (optional, ensure uniqueness)
+	username VARCHAR(50),										-- User's username (to log in)
     password_hash VARCHAR(255) NOT NULL,						-- Encrypted password for authentication
     membership_tier ENUM('Basic', 'Premium', 'VIP') DEFAULT 'Basic',  -- Membership tier, default is 'Basic'
     name VARCHAR(100),											-- User's name
-	username VARCHAR(50),										-- User's username (to log in)
     date_of_birth DATE,											-- Date of birth
     is_verified BOOLEAN DEFAULT FALSE							-- Whether the user has verified their email/phone
 );
