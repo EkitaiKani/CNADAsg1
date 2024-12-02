@@ -26,3 +26,12 @@ func (h *HomeHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+func (h *HomeHandler) Register(w http.ResponseWriter, r *http.Request) {
+
+	err := templates.Templates.ExecuteTemplate(w, "register.html", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+

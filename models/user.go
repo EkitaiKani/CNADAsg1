@@ -6,10 +6,11 @@ import "database/sql"
 type User struct {
 	UserId       int          `json:"id"`
 	UserEmail    string       `json:"name"`
-	PhoneNo      int          `json:"phone"`
+	//PhoneNo      int          `json:"phone"`
 	UserName     string       `json: username`
 	HashPassword string       `json:"pw"`
 	MemberTier   string       `json:"tier"`
-	Name         string       `json: name`
+	FirstName    string       `json: firstname`
+	LastName     string       `json: lastname`
 	DateofBirth  sql.NullTime `json: dob`
 }

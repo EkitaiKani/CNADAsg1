@@ -26,11 +26,12 @@ DROP TABLE IF EXISTS payment;
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,						-- Unique identifier for the user
     email VARCHAR(255) UNIQUE,									-- Email for registration (ensure uniqueness)
-    phone VARCHAR(8) UNIQUE,									-- Phone number for registration (optional, ensure uniqueness)
+    -- phone VARCHAR(8) UNIQUE,									-- Phone number for registration (optional, ensure uniqueness)
 	username VARCHAR(50) UNIQUE,										-- User's username (to log in)
     password_hash VARCHAR(255) NOT NULL,						-- Encrypted password for authentication
     membership_tier ENUM('Basic', 'Premium', 'VIP') DEFAULT 'Basic',  -- Membership tier, default is 'Basic'
-    name VARCHAR(100),											-- User's name
+    firstname VARCHAR(100),											-- User's first name
+    lastname VARCHAR(100),											-- User's last name
     date_of_birth DATE,											-- Date of birth
     is_verified BOOLEAN DEFAULT FALSE							-- Whether the user has verified their email/phone
 );
@@ -101,8 +102,8 @@ CREATE TABLE payments (
 
 /** Creating Records for Table users **/
 
-INSERT INTO users (email, phone, password_hash, membership_tier, name, username, date_of_birth, is_verified)
-VALUES ('john.doe@example.com', '91234567', 'hashed_password_example', 'Premium', 'John Doe', 'johndoe', '1990-01-01', TRUE);
+INSERT INTO users (email, password_hash, membership_tier, firstname, lastname, username, date_of_birth, is_verified)
+VALUES ('john.doe@example.com', 'hashed_password_example', 'Premium', 'John', 'Doe', 'johndoe', '1990-01-01', TRUE);
 
 
 /** Creating Records for Table cars **/

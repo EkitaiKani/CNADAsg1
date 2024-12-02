@@ -31,12 +31,18 @@ func main() {
 	// Create router
 	r := mux.NewRouter()
 
+	// Serve static files (CSS, JS, images)
+    staticHandler := http.FileServer(http.Dir("./static"))
+    r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticHandler))
+	
 	// home routes
 	r.HandleFunc("/", homeHandler.Home).Methods("GET")
 	r.HandleFunc("/login", homeHandler.Login).Methods("GET")
+	r.HandleFunc("/register", homeHandler.Register).Methods("GET")
 
 	// User routes
-	r.HandleFunc("/login", userHandler.CreateUser).Methods("POST")
+	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST")
+	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST")
 	//r.HandleFunc("/login", userHandler.GetUser).Methods("GET")
 
 	// Start server
