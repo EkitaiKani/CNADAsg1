@@ -1,12 +1,12 @@
-package rental
+package models
 
 // for rental table
-type rental struct {
-	rentalId    string `json:"id"`
-	userId      string `json:"userId"`
-	carId       int    `json:"carId"`
-	start       string `json:"startTime"`
-	end         int    `json:"endTime"`
-	totalAmount int    `json:"amount"`
-	status      string `json: status`
+type Rental struct {
+	RentalId    string `json:"id"`
+	UserId      string `json:"userId"`
+	CarId       int    `json:"carId"`
+	Start       string `json:"startTime"`
+	End         int    `json:"endTime"`
+	TotalAmount int    `json:"amount"`
+	Status      string `json: status`
 }

@@ -1,16 +1,16 @@
-package car
+package models
 
 import "database/sql"
 
 // for car table
-type car struct {
-	carId         string       `json:"id"`
-	carModel      string       `json:"model"`
-	liscencePlate string       `json:"plate"`
-	status        string       `json: status`
-	currLoc       string       `json:"loc"`
-	charge        int          `json:"charge"`
-	cleanliness   string       `json: cleanliness`
-	lastServiced  sql.NullTime `json: dateServiced`
-	addedDate     sql.NullTime `json: dateAdded`
+type Car struct {
+	CarId         string       `json:"id"`
+	CarModel      string       `json:"model"`
+	LiscencePlate string       `json:"plate"`
+	Status        string       `json: status`
+	CurrLoc       string       `json:"loc"`
+	Charge        int          `json:"charge"`
+	Cleanliness   string       `json: cleanliness`
+	LastServiced  sql.NullTime `json: dateServiced`
+	AddedDate     sql.NullTime `json: dateAdded`
 }

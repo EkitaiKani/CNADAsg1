@@ -1,16 +1,15 @@
-package user
+package models
 
 import "database/sql"
 
 // for user table
-type user struct {
-	userId       string    `json:"id"`
-	userEmail    string    `json:"name"`
-	phoneNo      int       `json:"phone"`
-	userName     string    `json: username`
-	hashPassword string    `json:"pw"`
-	memberTier   string    `json:"tier"`
-	name         string    `json: name`
-	dateofBirth  sql.NullTime `json: dob`
-	isVerified   bool      `json: verified`
+type User struct {
+	UserId       int          `json:"id"`
+	UserEmail    string       `json:"name"`
+	PhoneNo      int          `json:"phone"`
+	UserName     string       `json: username`
+	HashPassword string       `json:"pw"`
+	MemberTier   string       `json:"tier"`
+	Name         string       `json: name`
+	DateofBirth  sql.NullTime `json: dob`
 }

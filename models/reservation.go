@@ -1,13 +1,13 @@
-package rental
+package models
 
 import "database/sql"
 
 // for reservation table
-type reservation struct {
-	reservationId string 	`json:"id"`
-	userId        int 		`json:"userId"`
-	carId         int    	`json:"carId"`
-	start         sql.NullTime `json:"startTime"`
-	end           sql.NullTime `json:"endTime"`
-	status        string 	`json: status`
+type Reservation struct {
+	ReservationId string       `json:"id"`
+	UserId        int          `json:"userId"`
+	CarId         int          `json:"carId"`
+	Start         sql.NullTime `json:"startTime"`
+	End           sql.NullTime `json:"endTime"`
+	Status        string       `json: status`
 }
