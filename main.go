@@ -41,9 +41,11 @@ func main() {
 	r.HandleFunc("/register", homeHandler.Register).Methods("GET")
 
 	// User routes
+	r.HandleFunc("/profile", handlers.AuthMiddleware(userHandler.UserDetails)).Methods("GET")
 	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST")
 	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST")
 	//r.HandleFunc("/login", userHandler.GetUser).Methods("GET")
+	r.HandleFunc("/logout", userHandler.LogOutUser).Methods("GET")
 
 	// Start server
 	log.Println("Server starting on :8080")

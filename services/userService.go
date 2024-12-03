@@ -44,7 +44,6 @@ func (s *UserService) CreateUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-
 // log in user
 func (s *UserService) LogInUser(username string, password string) (*models.User, error) {
 
@@ -79,3 +78,23 @@ func (s *UserService) LogInUser(username string, password string) (*models.User,
 	return nil, err
 
 }
+
+// fetches user details for the user details page.
+func (s *UserService) GetUserDetails(id int) (*models.User, error) {
+    // Create a new instance of models.User
+    u := &models.User{}
+
+    // Set id
+    u.UserId = id
+
+    // Get user details
+    query := "SELECT email, username, membership_tier, firstname, lastname, date_of_birth, is_verified FROM users WHERE user_id = ?"
+    err := s.DB.QueryRow(query, id).Scan(&u.UserEmail, &u.UserName, &u.MemberTier, &u.FirstName, &u.LastName, &u.DateofBirth, &u.Verified)
+    if err != nil {
+        log.Println("Row scan error:", err)
+        return nil, err
+    }
+
+    return u, nil
+}
+

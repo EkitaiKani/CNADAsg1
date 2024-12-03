@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"log"
 	"net/http"
 	"time"
+	"context"
 
 	"CNADASG1/models"
 	"CNADASG1/services"
@@ -146,12 +146,12 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	session.Values["user_id"] = user.UserId
 
 	// Set session options
-	session.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   86400 * 7, // 7 days
-		HttpOnly: true,
-		Secure:   true, // Use only over HTTPS
-	}
+	// session.Options = &sessions.Options{
+	// 	Path:     "/",
+	// 	MaxAge:   86400 * 7, // 7 days
+	// 	HttpOnly: true,
+	// 	Secure:   true, // Use only over HTTPS
+	// }
 
 	// Save the session
 	err = session.Save(r, w)
@@ -168,26 +168,114 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *UserHandler) LogOutUser(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "user-session")
+    if err != nil {
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+	
+	// Clear the session
+	session.Values = make(map[interface{}]interface{})
+	session.Options.MaxAge = -1 // Expire the session immediately
+	
+	// Save the session before redirecting
+	if err := session.Save(r, w); err != nil {
+		http.Error(w, "Session save error", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to login or home page
+	log.Print("logged out successfully")
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+
+
+func (h *UserHandler) UserDetails(w http.ResponseWriter, r *http.Request) {
+    session, err := store.Get(r, "user-session")
+    if err != nil {
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+    // Convert userid from session state to int
+    id, ok := session.Values["user_id"].(int)
+	// log.Print(ok)
+    if !ok {
+        // Clear the session
+        session.Values = make(map[interface{}]interface{})
+        session.Options.MaxAge = -1 // Expire the session immediately
+        
+        // Save the session before redirecting
+        if err := session.Save(r, w); err != nil {
+            http.Error(w, "Session save error", http.StatusInternalServerError)
+            return
+        }
+
+        // Redirect to login or home page
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
+        return
+    }
+
+	// log.Print(id)
+
+	// get user details
+    user, err := h.Service.GetUserDetails(id)
+	// log.Print(user.UserEmail)
+
+    if err != nil {
+        // Log the actual error
+        renderErr := templates.Templates.ExecuteTemplate(w, "profile.html", map[string]interface{}{
+            "message": "Error getting user details, please try again",
+            "error":   true,
+        })
+        if renderErr != nil {
+            http.Error(w, "Template render error", http.StatusInternalServerError)
+        }
+        return
+    }
+
+    // Render user details
+    if err := templates.Templates.ExecuteTemplate(w, "profile.html", map[string]interface{}{
+        "user":  user,
+        "error": false,
+    }); err != nil {
+        http.Error(w, "Template render error", http.StatusInternalServerError)
+    }
+}
+
 // Middleware to check if user is logged in
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		session, err := store.Get(r, "user-session")
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+        // Get the session
+        session, err := store.Get(r, "user-session")
+        if err != nil {
+            // If there's an error getting the session, redirect to login
+            http.Redirect(w, r, "/login", http.StatusSeeOther)
+            return
+        }
 
-		// Check if user is logged in
-		UserId, ok := session.Values["user_id"].(int) // Adjust type as needed
-		if !ok {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
+        // Check if user_id exists in session
+        if session.Values["user_id"] == nil {
+            // No user ID in session, redirect to login
+            http.Redirect(w, r, "/login", http.StatusSeeOther)
+            return
+        }
 
-		// You can optionally attach the user ID to the request context
-		ctx := context.WithValue(r.Context(), "user_id", UserId)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	}
+        // Convert userid from session state to int
+        id, ok := session.Values["user_id"].(int)
+        if !ok {
+            // If user_id is not an int, redirect to login
+            http.Redirect(w, r, "/login", http.StatusSeeOther)
+            return
+        }
+
+        // Attach the user ID to the request context
+        ctx := context.WithValue(r.Context(), "user_id", id)
+        
+        // Call the next handler with the modified request
+        next.ServeHTTP(w, r.WithContext(ctx))
 }
-
+}
 
