@@ -23,10 +23,12 @@ func main() {
 
 	// Initialize services
 	userService := &services.UserService{DB: db}
+	carService := &services.CarService{DB: db}
 
 	// Initialize handlers
 	homeHandler := &handlers.HomeHandler{}
 	userHandler := &handlers.UserHandler{Service: userService}
+	carHandler := &handlers.CarHandler{Service: carService}
 
 	// Create router
 	r := mux.NewRouter()
@@ -46,6 +48,13 @@ func main() {
 	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST")
 	//r.HandleFunc("/login", userHandler.GetUser).Methods("GET")
 	r.HandleFunc("/logout", userHandler.LogOutUser).Methods("GET")
+
+	// Car routes
+	r.HandleFunc("/cars", carHandler.Cars).Methods("GET")
+	r.HandleFunc("/cars/{id}", carHandler.CarDetails).Methods("GET")
+
+
+
 
 	// Start server
 	log.Println("Server starting on :8080")

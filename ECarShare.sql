@@ -46,7 +46,8 @@ CREATE TABLE cars (
     charge_level INT DEFAULT 100,								-- Battery charge level (if electric), default 100%
     cleanliness_status ENUM('Clean', 'Needs Cleaning', 'Dirty') DEFAULT 'Clean', -- Cleanliness of the car
     last_serviced TIMESTAMP,									-- Timestamp when the car was last serviced
-    added_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP				-- Timestamp when the car was added to the system
+    added_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,				-- Timestamp when the car was added to the system
+    rate INT													-- hourly rate of the car
 );
 
 /**=======Table:  rentals=======**/ 
@@ -107,8 +108,8 @@ VALUES ('john.doe@example.com', 'hashed_password_example', 'Premium', 'John', 'D
 
 
 /** Creating Records for Table cars **/
-INSERT INTO cars (car_model, license_plate, status, current_location, charge_level, cleanliness_status, last_serviced)
-VALUES ('Tesla Model S', 'XYZ1234AB', 'Available', '40.7128° N, 74.0060° W', 85, 'Clean', '2024-11-01 14:30:00');
+INSERT INTO cars (car_model, license_plate, status, current_location, charge_level, cleanliness_status, last_serviced, rate)
+VALUES ('Tesla Model S', 'XYZ1234AB', 'Available', '40.7128° N, 74.0060° W', 85, 'Clean', '2024-11-01 14:30:00', 15);
 
 /** Creating Records for Table rentals **/
 INSERT INTO rentals (user_id, car_id, start_datetime, end_datetime, total_amount, status)
@@ -128,6 +129,7 @@ VALUES (1, 1, 'Credit Card', 'Completed', 150.00, 'f47ac10b-58cc-4372-a567-0e02b
 
 
 select*from users;
+select*from cars;
 select*from rentals;
 select*from reservations;
 select*from payments;
