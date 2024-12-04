@@ -3,6 +3,7 @@ package services
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	"CNADASG1/models"
 
@@ -81,20 +82,32 @@ func (s *UserService) LogInUser(username string, password string) (*models.User,
 
 // fetches user details for the user details page.
 func (s *UserService) GetUserDetails(id int) (*models.User, error) {
-    // Create a new instance of models.User
-    u := &models.User{}
+	// Create a new instance of models.User
+	u := &models.User{}
 
-    // Set id
-    u.UserId = id
+	// Set id
+	u.UserId = id
 
-    // Get user details
-    query := "SELECT email, username, membership_tier, firstname, lastname, date_of_birth, is_verified FROM users WHERE user_id = ?"
-    err := s.DB.QueryRow(query, id).Scan(&u.UserEmail, &u.UserName, &u.MemberTier, &u.FirstName, &u.LastName, &u.DateofBirth, &u.Verified)
-    if err != nil {
-        log.Println("Row scan error:", err)
-        return nil, err
-    }
+	// create var for dates
+	var dob string
 
-    return u, nil
+	// Get user details
+	query := "SELECT email, username, membership_tier, firstname, lastname, date_of_birth, is_verified FROM users WHERE user_id = ?"
+	err := s.DB.QueryRow(query, id).Scan(&u.UserEmail, &u.UserName, &u.MemberTier, &u.FirstName, &u.LastName, &dob, &u.Verified)
+	if err != nil {
+		log.Println("Row scan error:", err)
+		return nil, err
+	}
+	// Parse the date into a time.Time if it's not NULL
+	if dob != "" {
+		parsedTime, err := time.Parse("2006-01-02", dob)
+		if err != nil {
+			log.Fatal(err)
+		}
+		u.DateofBirth = sql.NullTime{Time: parsedTime, Valid: true}
+	} else {
+		u.DateofBirth = sql.NullTime{Valid: false} // Handle NULL case
+	}
+
+	return u, nil
 }
-
