@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>Drivachu</title>
+    <link rel="icon" href="Images/.png" type="image/x-icon" />
+
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500&display=swap"
+      rel="stylesheet"
+    />
+
+    <script
+      src="https://kit.fontawesome.com/593851244e.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f6f9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #month-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 0;
+        }
+
+        .btn {
+            font-size: 1.1rem;
+        }
+
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: center;
+            padding: 15px;
+            font-size: 1.1rem;
+            height: 50px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        td {
+            cursor: pointer;
+            background-color: #fff;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .disabled-day {
+            color: #d3d3d3;
+            pointer-events: none;
+        }
+
+        .clickable-day {
+            color: #007bff;
+        }
+
+        .clickable-day:hover {
+            background-color: #e9f5ff;
+            color: #0056b3;
+            border-radius: 50%;
+        }
+
+        .current-day {
+            background-color: #ff9800;
+            color: white;
+            font-weight: bold;
+            border-radius: 50%;
+        }
+
+        .d-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        /* Timetable Styles */
+        .timetable-container {
+            display: none;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .timetable-container.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timetable-container h4 {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        .timetable-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .timetable-container li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .timetable-container .close-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px auto;
+            display: block;
+            border-radius: 5px;
+        }
+
+        .timetable-container .close-btn:hover {
+            background-color: #e53935;
+        }
+    </style>
+
+    <link rel="stylesheet" href="/static/css/mdb.min.css" />
+  </head>
+
+  <body style="background-color: #f4f7fc">
+    <nav
+      class="navbar navbar-expand-lg navbar-dark"
+      style="background-color: #b3d9f1"
+    >
+      {{ template "navbar" }}
+    </nav>
+
+    <!-- main content goes here -->
+    <main>
+    
+    <div class="container">
+        <h2>Reservation</h2>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex">
+                    <button class="btn btn-primary" id="prev-month">Previous</button>
+                    <h4 id="month-name">December 2024</h4>
+                    <button class="btn btn-primary" id="next-month">Next</button>
+                </div>
+                <table class="table table-bordered mt-3">
+                    <thead>
+                        <tr>
+                            <th>Sun</th>
+                            <th>Mon</th>
+                            <th>Tue</th>
+                            <th>Wed</th>
+                            <th>Thu</th>
+                            <th>Fri</th>
+                            <th>Sat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                        <!-- Calendar days will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Timetable Section (Initially hidden) -->
+        <div class="timetable-container" id="timetable-container">
+            <h4 id="selected-date"></h4>
+            <ul id="timetable-list">
+                {{ if .reservation}}
+                <!-- Timetable items will go here -->
+                <li>Event 1 - 9:00 AM</li>
+                <li>Event 2 - 1:00 PM</li>
+                <li>Event 3 - 4:00 PM</li>
+
+                {{else}}
+                <li></li>
+
+                {{end}}
+            </ul>
+            <button class="close-btn" id="close-timetable">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize current date
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+
+        // Function to render the calendar
+        function renderCalendar(month, year) {
+            let firstDay = new Date(year, month).getDay();
+            let lastDate = new Date(year, month + 1, 0).getDate();
+            let currentDay = currentDate.getDate();
+            let currentMonth = currentDate.getMonth();
+            let currentYear = currentDate.getFullYear();
+
+            // Set the month name in the header
+            let monthNames = [
+                "January", "February", "March", "April", "May", "June", 
+                "July", "August", "September", "October", "November", "December"
+            ];
+            document.getElementById("month-name").innerText = `${monthNames[month]} ${year}`;
+
+            // Clear the previous calendar body
+            let calendarBody = document.getElementById("calendar-body");
+            calendarBody.innerHTML = "";
+
+            // Create the rows of the calendar
+            let date = 1;
+            for (let i = 0; i < 6; i++) {
+                let row = document.createElement("tr");
+
+                for (let j = 0; j < 7; j++) {
+                    let cell = document.createElement("td");
+
+                    // Fill in the dates
+                    if (i === 0 && j >= firstDay) {
+                        cell.innerText = date++;
+                    } else if (i > 0 && date <= lastDate) {
+                        cell.innerText = date++;
+                    }
+
+                    // Get the current date
+                    let cellDate = new Date(year, month, cell.innerText);
+
+                    // Disable past dates
+                    if (cell.innerText && cellDate < currentDate) {
+                        cell.classList.add("disabled-day");
+                    } else if (cell.innerText) {
+                        cell.classList.add("clickable-day");
+                        cell.addEventListener("click", function() {
+                            showTimetable(cell.innerText, monthNames[month], year);
+                        });
+                    }
+
+                    // Highlight current day
+                    if (cell.innerText == currentDay && month == currentMonth && year == currentYear) {
+                        cell.classList.add("current-day");
+                    }
+
+                    // Append the cell to the row
+                    row.appendChild(cell);
+                }
+
+                // Append the row to the calendar body
+                calendarBody.appendChild(row);
+
+                if (date > lastDate) break;
+            }
+        }
+
+        // Function to show the timetable when a date is clicked
+        function showTimetable(day, month, year) {
+            let timetableContainer = document.getElementById("timetable-container");
+            let selectedDate = `${month} ${day}, ${year}`;
+            document.getElementById("selected-date").innerText = `Timetable for ${selectedDate}`;
+            timetableContainer.style.display = 'block'; // Show timetable
+
+            // Optionally, you can dynamically generate timetable events here based on the date
+        }
+
+        // Close timetable when the close button is clicked
+        document.getElementById("close-timetable").addEventListener("click", function() {
+            document.getElementById("timetable-container").style.display = 'none'; // Hide timetable
+        });
+
+        // Navigate to the next month
+        document.getElementById("next-month").addEventListener("click", function() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        // Navigate to the previous month
+        document.getElementById("prev-month").addEventListener("click", function() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        // Initial render
+        renderCalendar(currentMonth, currentYear);
+    </script>
+  </body>
+  <footer class="text-center text-white" style="background-color: #d1d8e0">
+    {{template "footer"}}
+  </footer>
+
+  <!-- MDB -->
+  <script type="text/javascript" src="/static/js/mdb.min.js"></script>
+
+  <!-- Custom scripts -->
+  <script
+    src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
+    integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
+    crossorigin="anonymous"
+  ></script>
+</html>

@@ -37,18 +37,17 @@
   <body style="background-color: #f4f7fc">
     <nav
       class="navbar navbar-expand-lg navbar-dark"
-      style="background-color: #B3D9F1"
+      style="background-color: #b3d9f1"
     >
       {{ template "navbar" }}
     </nav>
 
     <!-- main content goes here -->
-    <main>
-        {{ template "userDetails" . }}
-    </main>
-
+    <main>{{ template "paymentCard" . }}</main>
   </body>
-  <footer class="text-center text-white" style="background-color: #D1D8E0">{{template "footer"}}</footer>
+  <footer class="text-center text-white" style="background-color: #d1d8e0">
+    {{template "footer"}}
+  </footer>
 
   <!-- MDB -->
   <script type="text/javascript" src="/static/js/mdb.min.js"></script>
