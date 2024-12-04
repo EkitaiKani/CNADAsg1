@@ -31,6 +31,35 @@
       crossorigin="anonymous"
     ></script>
 
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .product-page {
+        padding: 40px 0;
+      }
+      .car-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+      .product-details {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 30px;
+      }
+      .product-info {
+        max-width: 500px;
+      }
+      .features-list {
+        margin-top: 20px;
+      }
+      .feature-item {
+        padding: 8px 0;
+      }
+    </style>
+
     <link rel="stylesheet" href="/static/css/mdb.min.css" />
   </head>
 
@@ -45,10 +74,56 @@
     <!-- main content goes here -->
     <main>
       {{if not .Error}}
-      <h1>Car Details</h1>
-      <p>Model: {{.car.CarModel}}</p>
-      <p>Charge Level: {{.car.Charge}}</p>
-      <p>Last Serviced: {{.car.LastServiced}}</p>
+      <div class="container product-page">
+        <div class="row product-details">
+          <!-- Car Image Section -->
+          <div class="col-md-6 text-center">
+            <img
+              src="https://via.placeholder.com/500x300"
+              class="car-image"
+              alt="Car Image"
+            />
+          </div>
+
+          <!-- Car Details Section -->
+          <div class="col-md-6 product-info">
+            <div>
+              <h2 class="mb-3">{{.car.CarModel}}</h2>
+              <p><strong>License Plate:</strong> {{.car.LiscencePlate}}</p>
+              <p><strong>Status:</strong> {{.car.Status}}</p>
+              <p><strong>Charge Level:</strong> {{.car.Charge}}</p>
+              <p><strong>Rate:</strong> {{.car.Rate}}</p>
+              <p><strong>Cleanliness:</strong> {{.car.Cleanliness}}</p>
+
+              <!-- Reservation Form -->
+              <form>
+                <button type="submit" class="btn btn-primary btn-lg">
+                  Reserve Now
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Car Features Section -->
+        <div class="row features-list">
+          <div class="col-md-12">
+            <h3>Car Features</h3>
+            <ul class="list-group">
+              <li class="list-group-item feature-item">Electric Drive</li>
+              <li class="list-group-item feature-item">Autopilot</li>
+              <li class="list-group-item feature-item">Leather Seats</li>
+              <li class="list-group-item feature-item">Panoramic Roof</li>
+              <li class="list-group-item feature-item">GPS Navigation</li>
+              <li class="list-group-item feature-item">
+                Bluetooth Connectivity
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
       {{else}}
       <p>{{.Message}}</p>
       {{end}}
