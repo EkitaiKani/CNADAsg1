@@ -63,14 +63,16 @@ func (s *CarService) GetCarDetails(id int) (*models.Car, error) {
 	var lastServiced string
 
 	// Get car details from the database
-	query := "SELECT car_model, current_location, charge_level, cleanliness_status, last_serviced, rate FROM cars WHERE car_id = ?"
+	query := "SELECT car_model, license_plate, status, current_location, charge_level, cleanliness_status, last_serviced, rate FROM cars WHERE car_id = ?"
 	err := s.DB.QueryRow(query, id).Scan(
-		&u.CarModel,    // car_model
-		&u.CurrLoc,     // current_location
-		&u.Charge,      // charge_level
-		&u.Cleanliness, // cleanliness_status
-		&lastServiced,  // last_serviced (sql.NullTime)
-		&u.Rate,        // rate
+		&u.CarModel,      // car_model
+		&u.LiscencePlate, //liscence plate
+		&u.Status,        // status
+		&u.CurrLoc,       // current_location
+		&u.Charge,        // charge_level
+		&u.Cleanliness,   // cleanliness_status
+		&lastServiced,    // last_serviced (sql.NullTime)
+		&u.Rate,          // rate
 	)
 
 	// Parse the date into a time.Time if it's not NULL

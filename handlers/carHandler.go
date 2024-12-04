@@ -1,54 +1,50 @@
 package handlers
 
 import (
-	"html/template"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
-	"strconv"
 
-	"CNADASG1/services"
 	"CNADASG1/templates"
 
 	"github.com/gorilla/mux"
 )
 
 type CarHandler struct {
-	Templates *template.Template
-	Service   *services.CarService
+	BaseURL string
+}
+
+// NewCarHandler is a constructor function to create a new CarHandler with the API base URL
+func NewCarHandler(baseURL string) *CarHandler {
+	return &CarHandler{
+		BaseURL: baseURL + "/Cars/", // Store the base URL
+	}
 }
 
 func (h *CarHandler) Cars(w http.ResponseWriter, r *http.Request) {
 
-	// get car details
-	carList, err := h.Service.GetCars()
+	var response map[string]interface{}
+	url := h.BaseURL
+	client := &http.Client{}
 
-	if err != nil {
-		// Log the actual error
-		renderErr := templates.Templates.ExecuteTemplate(w, "cars.html", map[string]interface{}{
-			"message": "Error getting cars, please try again",
-			"error":   true,
-		})
-		if renderErr != nil {
-			http.Error(w, "Template render error", http.StatusInternalServerError)
-		}
-		return
-	}
+	if req, err := http.NewRequest("GET", url, nil); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
 
-	if len(carList) == 0 {
-		// if there are no cars
-		if err := templates.Templates.ExecuteTemplate(w, "cars.html", map[string]interface{}{
-			"message": "There are no available cars",
-			"error":   false,
-		}); err != nil {
-			http.Error(w, "Template render error", http.StatusInternalServerError)
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &response)
+
 		}
-		return
 	}
 
 	// Render cars
-	if err := templates.Templates.ExecuteTemplate(w, "cars.html", map[string]interface{}{
-		"carList": carList,
-		"error":   false,
-	}); err != nil {
+	if err := templates.Templates.ExecuteTemplate(w, "cars.html", response); err != nil {
 		http.Error(w, "Template render error", http.StatusInternalServerError)
 	}
 
@@ -57,41 +53,29 @@ func (h *CarHandler) Cars(w http.ResponseWriter, r *http.Request) {
 func (h *CarHandler) CarDetails(w http.ResponseWriter, r *http.Request) {
 	// Get car id from URL
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	id := vars["id"]
 
-	// Handle error if converting id fails
-	if err != nil {
-		renderErr := templates.Templates.ExecuteTemplate(w, "carDetails.html", map[string]interface{}{
-			"message": "Invalid car ID",
-			"error":   true,
-		})
-		if renderErr != nil {
-			http.Error(w, renderErr.Error(), http.StatusInternalServerError)
+	var response map[string]interface{}
+	url := h.BaseURL + id
+	client := &http.Client{}
+
+	if req, err := http.NewRequest("GET", url, nil); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &response)
+
 		}
-		return
-	}
-
-	// Get car details
-	car, err := h.Service.GetCarDetails(id)
-	// log.Print(car.CarModel)
-
-	if err != nil {
-		renderErr := templates.Templates.ExecuteTemplate(w, "carDetails.html", map[string]interface{}{
-			"message": "Error getting car details, please try again",
-			"error":   true,
-		})
-		if renderErr != nil {
-			http.Error(w, renderErr.Error(), http.StatusInternalServerError)
-		}
-		return
 	}
 
 	// Render car details
-	err = templates.Templates.ExecuteTemplate(w, "carDetails.html", map[string]interface{}{
-		"car":     car,
-		"error":   false,
-		"message": "",
-	})
+	err := templates.Templates.ExecuteTemplate(w, "carDetails.html", response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

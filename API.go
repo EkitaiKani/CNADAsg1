@@ -21,7 +21,7 @@ func main() {
 	userService := &services.UserService{DB: db}
 	resService := &services.ReserveService{DB: db}
 
-	// Initialize handlers
+	// Initialize apis
 	userAPI := &apis.UserAPI{Service: userService}
 	resAPI := &apis.ReserveAPI{Service: resService}
 
