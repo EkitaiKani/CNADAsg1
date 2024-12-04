@@ -34,7 +34,7 @@ func main() {
 
 	// Reservation routs
 	r.HandleFunc("/api/v1/reservation/user/{id}", resAPI.UserReservations).Methods("GET")
-	r.HandleFunc("/api/v1/reservation/car/{id}", resAPI.UserReservations).Methods("GET")
+	r.HandleFunc("/api/v1/reservation/car/{id}", resAPI.CarReservations).Methods("GET")
 
 	// Start server
 	log.Println("Server starting on :8081")

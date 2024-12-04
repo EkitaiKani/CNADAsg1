@@ -93,7 +93,6 @@ func (h *UserAPI) LoginUser(w http.ResponseWriter, r *http.Request) {
 			"message": "Username or password is incorrect.",
 			"error":   true,
 		}
-		return
 
 	} else {
 		// After successful creation, render the user in the template
@@ -139,13 +138,12 @@ func (h *UserAPI) UserDetails(w http.ResponseWriter, r *http.Request) {
 			"message": "Error getting user details, please try again",
 			"error":   true,
 		}
-		return
-	}
 
-	// Render user details
-	jsonBody = map[string]interface{}{
-		"user":  user,
-		"error": false,
+	} else { // Render user details
+		jsonBody = map[string]interface{}{
+			"user":  user,
+			"error": false,
+		}
 	}
 
 	// Secure HTTP headers
