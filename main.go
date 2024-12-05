@@ -56,7 +56,7 @@ func main() {
 
 	// Reservation routes
 	r.HandleFunc("/reserve", resHandler.CarReservations).Methods("GET")
-	r.HandleFunc("/reserve/car/{id}", resHandler.PostReservation).Methods("GET")
+	r.HandleFunc("/reserve/car/{id}", resHandler.PostReservation).Methods("POST")
 
 	// Start server
 	log.Println("Server starting on :8080")

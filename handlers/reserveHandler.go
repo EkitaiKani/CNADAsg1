@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -107,7 +108,7 @@ func (h *ReserveHandler) PostReservation(w http.ResponseWriter, r *http.Request)
 	}
 
 	session, err := store.Get(r, "user-session")
-	userID, ok := session.Values["user_id"].(int)
+	userID, ok := session.Values["user_id"].(string)
 	if !ok {
 		// If the user_id is not found or has an incorrect type
 		// log.Print(session.Values["user_id"]) // For debugging
@@ -116,14 +117,14 @@ func (h *ReserveHandler) PostReservation(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Retrieve form values by their "name" attribute
-	userId := userID
-	carIdStr := r.URL.Query().Get("id")
-	startStr := r.URL.Query().Get("start")
-	endStr := r.URL.Query().Get("end")
-	dateStr := r.URL.Query().Get("date")
+	userId, _ := strconv.Atoi(userID)
+	carIdStr := r.FormValue("CarId")
+	startStr := r.FormValue("Start")
+	endStr := r.FormValue("End")
+	dateStr := r.FormValue("date")
 
-	log.Print(startStr)
-	log.Print(dateStr)
+	//log.Print(startStr)
+	//log.Print(dateStr)
 
 	// Convert CarId to int
 	carId, err := strconv.Atoi(carIdStr)
@@ -134,39 +135,50 @@ func (h *ReserveHandler) PostReservation(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Try to parse the date string to time.Time
-	var start sql.NullTime
-	var end sql.NullTime
-
-	if startStr != "" {
-		parsedTime, err := time.Parse("2006-01-02 15:04:05", startStr) // Expecting date in "YYYY-MM-DD" format
-		if err != nil {
-			log.Println("Error parsing start time:", err)
-			http.Error(w, "Invalid date format", http.StatusBadRequest)
-			return
-		}
-		start = sql.NullTime{Time: parsedTime, Valid: true} // Mark as valid with parsed time
-	} else {
-		start = sql.NullTime{Valid: false} // If empty, mark as invalid (representing NULL in SQL)
+	// Parse the date string to a time.Time (we assume it's in UTC)
+	baseTime, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		fmt.Println("Error parsing date:", err)
+		return
 	}
 
-	if endStr != "" {
-		parsedTime, err := time.Parse("2006-01-02 15:04:05", endStr) // Expecting date in "YYYY-MM-DD" format
-		if err != nil {
-			log.Println("Error parsing end time:", err)
-			http.Error(w, "Invalid date format", http.StatusBadRequest)
-			return
-		}
-		end = sql.NullTime{Time: parsedTime, Valid: true} // Mark as valid with parsed time
-	} else {
-		end = sql.NullTime{Valid: false} // If empty, mark as invalid (representing NULL in SQL)
+	// DO NOT REMOVE
+	baseTime = baseTime.AddDate(0, 0, 1)
+
+	// Split the time string into hours and minutes and convert to a time.Duration
+	hours, minutes := 0, 0
+	_, err = fmt.Sscanf(startStr, "%d:%d", &hours, &minutes)
+	if err != nil {
+		fmt.Println("Error parsing time:", err)
+		return
 	}
 
+	// Set the hours and minutes from the timeStr into the baseTime
+	startTime := time.Date(baseTime.Year(), baseTime.Month(), baseTime.Day(), hours, minutes, 0, 0, time.UTC)
+
+	startDate := sql.NullTime{
+		Time:  startTime, // This is your combined date and time
+		Valid: true,      // Set it to true if it's a valid date
+	}
+
+	_, err = fmt.Sscanf(endStr, "%d:%d", &hours, &minutes)
+	if err != nil {
+		fmt.Println("Error parsing time:", err)
+		return
+	}
+
+	// Set the hours and minutes from the timeStr into the baseTime
+	endTime := time.Date(baseTime.Year(), baseTime.Month(), baseTime.Day(), hours, minutes, 0, 0, time.UTC)
+
+	endDate := sql.NullTime{
+		Time:  endTime, // This is your combined date and time
+		Valid: true,    // Set it to true if it's a valid date
+	}
 	res := &models.Reservation{
 		CarId:  carId,
 		UserId: userId,
-		Start:  start,
-		End:    end,
+		Start:  endDate,
+		End:    startDate,
 	}
 
 	var response map[string]interface{}

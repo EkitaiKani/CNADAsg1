@@ -35,6 +35,26 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+    <script>
+      $(document).ready(function() {
+        $("#add-update-msg").hide();
+        $("#add-error-msg").hide();
+
+        // Go template logic to inject into JavaScript
+        {{ if .error }}
+        // If message exists, enable the button and show the error message
+        $("#user-submit").prop("disabled", false);
+          // Show error message and fade out after 5 seconds
+          $("#add-error-msg").show().fadeOut(5000);
+        {{ else }}
+           // Show success message and fade out after 5 seconds
+          $("#add-update-msg").show().fadeOut(5000);
+
+
+        {{ end }}
+      });
+    </script>
+
     <style>
       /* Clickable day and hover behavior */
       .clickable-day {
@@ -108,7 +128,20 @@
     </nav>
 
     <main>
-      <div class="container">
+      <div class="container mt-3">
+        <div class="row justify-content-center">
+          <!--If an error occurs-->
+          <div id="add-error-msg">
+            <div class="alert alert-danger" role="alert">
+              {{ .message}}
+            </div>
+          </div>
+
+          <div id="add-update-msg">
+            <div class="alert alert-success" role="alert">
+              {{.message}}
+            </div>
+          </div>
         <h2>View Availability</h2>
         <div class="card">
           <div class="card-body">
@@ -144,7 +177,7 @@
               <form
                 id="res-date"
                 action="/reserve/car/{{.car.id}}"
-                method="GET"
+                method="POST"
               >
                 <input
                   type="hidden"
@@ -197,160 +230,175 @@
     </main>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const currentDate = new Date();
-        let currentMonth = currentDate.getMonth();
-        let currentYear = currentDate.getFullYear();
+      // Initialize the current date and month
+      let currentDate = new Date();
+      let currentMonth = currentDate.getMonth();
+      let currentYear = currentDate.getFullYear();
 
-        const monthNames = [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-          "August",
-          "September",
-          "October",
-          "November",
-          "December",
-        ];
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
 
-        const elements = {
-          monthName: document.getElementById("month-name"),
-          calendarBody: document.getElementById("calendar-body"),
-          timetableContainer: document.getElementById("timetable-container"),
-          selectedDate: document.getElementById("selected-date"),
-          timetableList: document.getElementById("timetable-list"),
-          closeTimetableBtn: document.getElementById("close-timetable"),
-          prevMonthBtn: document.getElementById("prev-month"),
-          nextMonthBtn: document.getElementById("next-month"),
-        };
+      // Render the calendar for the given month and year
+      function renderCalendar(month, year) {
+        const firstDay = new Date(year, month).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        const currentDay = currentDate.getDate();
 
-        function renderCalendar(month, year) {
-          const firstDay = new Date(year, month).getDay();
-          const lastDate = new Date(year, month + 1, 0).getDate();
+        document.getElementById(
+          "month-name"
+        ).innerText = `${monthNames[month]} ${year}`;
+        const calendarBody = document.getElementById("calendar-body");
+        calendarBody.innerHTML = "";
 
-          elements.monthName.textContent = `${monthNames[month]} ${year}`;
-          elements.calendarBody.innerHTML = "";
+        let date = 1;
+        for (let i = 0; i < 6; i++) {
+          let row = document.createElement("tr");
+          for (let j = 0; j < 7; j++) {
+            let cell = document.createElement("td");
 
-          let date = 1;
-          for (let i = 0; i < 6; i++) {
-            const row = document.createElement("tr");
-            for (let j = 0; j < 7; j++) {
-              const cell = document.createElement("td");
-
-              if ((i === 0 && j >= firstDay) || (i > 0 && date <= lastDate)) {
-                cell.textContent = date;
-
-                const cellDate = new Date(year, month, date);
-                if (cellDate < currentDate) {
-                  cell.classList.add("disabled-day");
-                } else {
-                  cell.classList.add("clickable-day");
-                  cell.addEventListener("click", () =>
-                    showTimetable(date, monthNames[month], year)
-                  );
-                }
-
-                if (
-                  date === currentDate.getDate() &&
-                  month === currentDate.getMonth() &&
-                  year === currentDate.getFullYear()
-                ) {
-                  cell.classList.add("current-day");
-                }
-
-                date++;
-              }
-
-              row.appendChild(cell);
+            if ((i === 0 && j >= firstDay) || (i > 0 && date <= lastDate)) {
+              cell.innerText = date++;
             }
-            elements.calendarBody.appendChild(row);
-            if (date > lastDate) break;
+
+            // Adding classes and event listeners for clickable days
+            if (
+              cell.innerText &&
+              new Date(year, month, cell.innerText) < currentDate
+            ) {
+              cell.classList.add("disabled-day");
+            } else if (cell.innerText) {
+              cell.classList.add("clickable-day");
+              cell.addEventListener("click", () => {
+                showTimetable(cell.innerText, monthNames[month], year);
+              });
+            }
+
+            if (
+              cell.innerText == currentDay &&
+              month == currentMonth &&
+              year == currentYear
+            ) {
+              cell.classList.add("current-day");
+            }
+
+            row.appendChild(cell);
           }
+          calendarBody.appendChild(row);
+          if (date > lastDate) break;
         }
+      }
 
-        async function showTimetable(day, month, year) {
-          const monthIndex = monthNames.indexOf(month) + 1;
-          const carId = new URLSearchParams(window.location.search).get("id");
-          const apiUrl = `http://localhost:8081/api/v1/reservation/available-times?carId=${carId}&year=${year}&month=${monthIndex}&day=${day}`;
+      // Show timetable when a date is clicked
+      async function showTimetable(day, month, year) {
+        const timetableContainer = document.getElementById(
+          "timetable-container"
+        );
+        const selectedDate = document.getElementById("selected-date");
+        selectedDate.innerText = `${month} ${day}, ${year}`;
 
-          try {
-            const response = await fetch(apiUrl, { mode: "cors" });
-            if (!response.ok)
-              throw new Error(`Error fetching data: ${response.statusText}`);
+        const monthIndex = monthNames.indexOf(month) + 1;
+        const carId = new URLSearchParams(window.location.search).get("id");
+        const apiUrl = `http://localhost:8081/api/v1/reservation/available-times?carId=${carId}&year=${year}&month=${monthIndex}&day=${day}`;
 
-            const data = await response.json();
-            elements.selectedDate.textContent = `${month} ${day}, ${year}`;
-            elements.timetableList.innerHTML = "";
+        try {
+          const response = await fetch(apiUrl, { mode: "cors" });
 
-            Object.values(data).forEach((timeSlot) => {
-              const listItem = document.createElement("li");
-              listItem.textContent = `${timeSlot.start_time} - ${timeSlot.end_time}`;
-              elements.timetableList.appendChild(listItem);
-            });
-
-            // Remove previous hidden date input if exists
-            const prevInput = document.getElementById("get-date");
-            if (prevInput) prevInput.remove();
-
-            // Create new hidden input for selected date
-            const hiddenInput = document.createElement("input");
-            hiddenInput.type = "hidden";
-            hiddenInput.id = "get-date";
-            hiddenInput.name = "date";
-            hiddenInput.value = new Date(
-              year,
-              monthIndex - 1,
-              day
-            ).toISOString();
-
-            document.getElementById("res-date").appendChild(hiddenInput);
-            elements.timetableContainer.classList.add("show");
-          } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to fetch available time slots.");
+          if (!response.ok) {
+            throw new Error(`Error fetching data: ${response.statusText}`);
           }
+
+          const data = await response.json(); // Correctly parse the JSON data
+
+          // Get the timetable list <ul> element
+          const timetableList = document.getElementById("timetable-list");
+
+          // Clear any existing timetable items (if any)
+          timetableList.innerHTML = "";
+
+          // Loop through the time slots and display them
+          Object.entries(data).forEach(([id, timeSlot]) => {
+            const listItem = document.createElement("li");
+            listItem.textContent = `${timeSlot.start_time} - ${timeSlot.end_time}`;
+            timetableList.appendChild(listItem);
+          });
+
+          // Remove hidden input if it exists
+          const Input = document.getElementById("get-date");
+          if (Input) {
+            Input.remove(); // This clears the value without removing the element
+          }
+
+          // Insert hidden input for the selected date
+          const cellDate = new Date(year, monthIndex - 1, day);
+
+          // Set the time to midnight
+          cellDate.setHours(0, 0, 0, 0);
+
+          const hiddenInput = document.createElement("input");
+          hiddenInput.type = "hidden";
+          hiddenInput.id = "get-date";
+          hiddenInput.name = "date"; // Name to be sent with the form
+          hiddenInput.value = cellDate.toISOString(); // Store the date as an ISO string
+
+          // Assuming you have a form with the id 'time-form' where this hidden input will be appended
+          const form = document.getElementById("res-date");
+          form.appendChild(hiddenInput); // Append the hidden input to the form
+        } catch (error) {
+          console.error("Error:", error);
+          alert("There was an error fetching available slots.");
         }
 
-        function initEventListeners() {
-          elements.closeTimetableBtn.addEventListener("click", () =>
-            elements.timetableContainer.classList.remove("show")
-          );
+        timetableContainer.classList.add("show");
+      }
 
-          elements.prevMonthBtn.addEventListener("click", () => {
-            currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-            currentYear -= currentMonth === 11 ? 1 : 0;
-            renderCalendar(currentMonth, currentYear);
-          });
+      // Close timetable section
+      document
+        .getElementById("close-timetable")
+        .addEventListener("click", () => {
+          document
+            .getElementById("timetable-container")
+            .classList.remove("show");
+        });
 
-          elements.nextMonthBtn.addEventListener("click", () => {
-            currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-            currentYear += currentMonth === 0 ? 1 : 0;
-            renderCalendar(currentMonth, currentYear);
-          });
-        }
+      // Render initial calendar
+      renderCalendar(currentMonth, currentYear);
 
-        function initTimePickers() {
-          flatpickr("#time-range-start", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-          });
-
-          flatpickr("#time-range-end", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-          });
-        }
-
-        // Initialize everything
+      // Navigate to the previous or next month
+      document.getElementById("prev-month").addEventListener("click", () => {
+        currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        if (currentMonth === 11) currentYear--;
         renderCalendar(currentMonth, currentYear);
-        initEventListeners();
-        initTimePickers();
+      });
+
+      document.getElementById("next-month").addEventListener("click", () => {
+        currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+        if (currentMonth === 0) currentYear++;
+        renderCalendar(currentMonth, currentYear);
+      });
+
+      // Initialize Flatpickr for time inputs
+      flatpickr("#time-range-start", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i", // Hour and minutes format
+      });
+
+      flatpickr("#time-range-end", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i", // Hour and minutes format
       });
     </script>
 

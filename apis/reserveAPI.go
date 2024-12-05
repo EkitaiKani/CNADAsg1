@@ -136,7 +136,7 @@ func (h *ReserveAPI) CreateReservation(w http.ResponseWriter, r *http.Request) {
 	jsonBody := make(map[string]interface{})
 	if err != nil {
 		jsonBody = map[string]interface{}{
-			"message": "Account was not created. Check your input fields and try again.",
+			"message": "Reservation was not created. Check your input fields and try again.",
 			"error":   true,
 		}
 		log.Print("Internal server error:", err)
@@ -144,7 +144,7 @@ func (h *ReserveAPI) CreateReservation(w http.ResponseWriter, r *http.Request) {
 		// After successful creation, render the user in the template
 		jsonBody = map[string]interface{}{
 			"res":     createdRes,
-			"message": "Account created successfully",
+			"message": "Reservation created successfully",
 			"error":   false,
 		}
 	}
