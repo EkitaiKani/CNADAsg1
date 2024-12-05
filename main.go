@@ -14,6 +14,9 @@ import (
 
 func main() {
 
+	// base url
+	baseURL := "http://localhost:8081/api/v1/"
+
 	// load templates
 	templates.InitializeTemplates()
 
@@ -21,17 +24,16 @@ func main() {
 	db := config.ConnectDatabase()
 	defer db.Close()
 
-	// Initialize services
-	userService := &services.UserService{DB: db}
-	carService := &services.CarService{DB: db}
-
 	// Initialize handlers
 	homeHandler := &handlers.HomeHandler{}
-	userHandler := &handlers.UserHandler{Service: userService}
-	carHandler := &handlers.CarHandler{Service: carService}
+	userHandler := &handlers.UserHandler{BaseURL: baseURL}
+	carHandler := &handlers.CarHandler{BaseURL: baseURL}
 
 	// Create router
 	r := mux.NewRouter()
+
+	// Wrap routes with the NotFound middleware
+	r.Use(handlers.NotFoundMiddleware)
 
 	// Serve static files (CSS, JS, images)
     staticHandler := http.FileServer(http.Dir("./static"))

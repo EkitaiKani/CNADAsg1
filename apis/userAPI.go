@@ -24,12 +24,7 @@ type UserAPI struct {
 func (h *UserAPI) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Get id from URL
 	vars := mux.Vars(r)
-
-	id, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
-		return
-	}
+	username := vars["id"]
 
 	// Decode the incoming JSON request body
 	var u *models.User
@@ -39,7 +34,7 @@ func (h *UserAPI) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	u.UserId = id
+	u.UserName = username
 
 	// Try to create the user using the service
 	createdUser, err := h.Service.CreateUser(u)
