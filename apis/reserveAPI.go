@@ -2,19 +2,18 @@ package apis
 
 import (
 	"encoding/json"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
 
+	"CNADASG1/models"
 	"CNADASG1/services"
 
 	"github.com/gorilla/mux"
 )
 
 type ReserveAPI struct {
-	Templates *template.Template
-	Service   *services.ReserveService
+	Service *services.ReserveService
 }
 
 func (h *ReserveAPI) CarReservations(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +36,7 @@ func (h *ReserveAPI) CarReservations(w http.ResponseWriter, r *http.Request) {
 			"message": "Error getting cars, please try again",
 			"error":   true,
 		}
+		log.Print("Internal server error:", err)
 
 	} else if len(resList) == 0 {
 		// if there are no cars
@@ -85,6 +85,7 @@ func (h *ReserveAPI) UserReservations(w http.ResponseWriter, r *http.Request) {
 			"message": "Error getting cars, please try again",
 			"error":   true,
 		}
+		log.Print("Internal server error:", err)
 
 	} else if len(resList) == 0 {
 		// if there are no cars
@@ -114,6 +115,43 @@ func (h *ReserveAPI) UserReservations(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *ReserveAPI) UpdateReservationStatus(w http.ResponseWriter, r *http.Request) {
+func (h *ReserveAPI) CreateReservation(w http.ResponseWriter, r *http.Request) {
+	// Decode the incoming JSON request body
+	var res *models.Reservation
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&res); err != nil {
+		log.Println("JSON decoding error:", err)
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
 
+	// Try to create the user using the service
+	createdRes, err := h.Service.CreateReservation(res)
+	jsonBody := make(map[string]interface{})
+	if err != nil {
+		jsonBody = map[string]interface{}{
+			"message": "Account was not created. Check your input fields and try again.",
+			"error":   true,
+		}
+		log.Print("Internal server error:", err)
+	} else {
+		// After successful creation, render the user in the template
+		jsonBody = map[string]interface{}{
+			"res":     createdRes,
+			"message": "Account created successfully",
+			"error":   false,
+		}
+	}
+
+	// Secure HTTP headers
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+	w.Header().Set("X-XSS-Protection", "1; mode=block")
+
+	// Encode the response and handle errors
+	if err := json.NewEncoder(w).Encode(jsonBody); err != nil {
+		log.Println("JSON encoding error:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
 }
