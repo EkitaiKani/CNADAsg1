@@ -189,7 +189,7 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 			// Convert id to string and set it in the session
 			session.Values["user_id"] = fmt.Sprintf("%v", id)
-			// log.Printf("Setting session user_id: %v", session.Values["user_id"])
+			log.Printf("Setting session user_id: %v", session.Values["user_id"])
 
 			// Save the session
 			err = session.Save(r, w)
@@ -241,7 +241,7 @@ func (h *UserHandler) UserDetails(w http.ResponseWriter, r *http.Request) {
 	userID, ok := session.Values["user_id"].(string)
 	if !ok {
 		// If the user_id is not found or has an incorrect type
-		log.Print(session.Values["user_id"]) // For debugging
+		// log.Print(session.Values["user_id"]) // For debugging
 		http.Error(w, "User not logged in", http.StatusUnauthorized)
 		return
 	}
@@ -291,8 +291,8 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Convert userid from session state to int
-		id, ok := session.Values["user_id"].(int)
+		// Convert userid from session state to string
+		id, ok := session.Values["user_id"].(string)
 		if !ok {
 			// If user_id is not an int, redirect to login
 			http.Redirect(w, r, "/login", http.StatusSeeOther)

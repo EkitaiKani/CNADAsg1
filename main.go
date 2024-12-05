@@ -27,6 +27,7 @@ func main() {
 	homeHandler := &handlers.HomeHandler{}
 	userHandler := &handlers.UserHandler{BaseURL: baseURL}
 	carHandler := &handlers.CarHandler{BaseURL: baseURL}
+	resHandler := &handlers.ReserveHandler{BaseURL: baseURL}
 
 	// Create router
 	r := mux.NewRouter()
@@ -52,6 +53,10 @@ func main() {
 
 	// Car routes
 	r.HandleFunc("/cars", carHandler.HandleCars).Methods("GET")
+
+	// Reservation routes
+	r.HandleFunc("/reserve", resHandler.CarReservations).Methods("GET")
+	r.HandleFunc("/reserve/car/{id}", resHandler.PostReservation).Methods("GET")
 
 	// Start server
 	log.Println("Server starting on :8080")

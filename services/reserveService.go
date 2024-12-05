@@ -2,6 +2,7 @@ package services
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -10,6 +11,11 @@ import (
 
 type ReserveService struct {
 	DB *sql.DB
+}
+
+type AvailableSlot struct {
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
 }
 
 // fetches Reserve details for the Reserves page
@@ -68,6 +74,114 @@ func (s *ReserveService) GetCarReservations(id int) (map[int]models.Reservation,
 	return resList, nil
 }
 
+func (s *ReserveService) GetAvailableTimeSlots(carId int, year int, month int, day int) ([]AvailableSlot, error) {
+
+    // Define available time range for the entire day
+    availableStart := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+    availableEnd := time.Date(year, time.Month(month), day, 23, 59, 0, 0, time.UTC)
+
+    // Prepare date for query
+    queryDate := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+
+    // Get all reservations for the car on this particular day
+    query := `SELECT start_datetime, end_datetime 
+              FROM reservations 
+              WHERE car_id = ? AND DATE(start_datetime) = ?
+              ORDER BY start_datetime`
+
+    rows, err := s.DB.Query(query, carId, queryDate.Format("2006-01-02"))
+    if err != nil {
+        return nil, fmt.Errorf("failed to query reservations: %v", err)
+    }
+    defer rows.Close()
+
+    // Collect reserved time slots
+    var reservedSlots []struct {
+        start time.Time
+        end   time.Time
+    }
+
+    for rows.Next() {
+        var startByte, endByte []byte // Scan into []byte first
+        if err := rows.Scan(&startByte, &endByte); err != nil {
+            return nil, fmt.Errorf("error scanning reservation: %v", err)
+        }
+
+        // Parse the byte slices into time.Time
+        start, err := time.Parse("2006-01-02 15:04:05", string(startByte))
+        if err != nil {
+            return nil, fmt.Errorf("error parsing start time: %v", err)
+        }
+        end, err := time.Parse("2006-01-02 15:04:05", string(endByte))
+        if err != nil {
+            return nil, fmt.Errorf("error parsing end time: %v", err)
+        }
+
+        reservedSlots = append(reservedSlots, struct {
+            start time.Time
+            end   time.Time
+        }{start, end})
+    }
+
+    // Check for any errors encountered during iteration
+    if err = rows.Err(); err != nil {
+        return nil, fmt.Errorf("error reading reservation rows: %v", err)
+    }
+
+    // Generate available time slots with detailed breakdown
+    return generateAvailableSlots(availableStart, availableEnd, reservedSlots), nil
+}
+
+
+func generateAvailableSlots(availableStart, availableEnd time.Time, reservedSlots []struct {
+    start time.Time
+    end   time.Time
+}) []AvailableSlot {
+    var availableSlots []AvailableSlot
+    currentStart := availableStart
+
+    // If no reservations, return the entire day as available
+    if len(reservedSlots) == 0 {
+        return []AvailableSlot{
+            {
+                StartTime: availableStart.Format("15:04"),
+                EndTime:   availableEnd.Format("15:04"),
+            },
+        }
+    }
+
+    // Sort reserved slots by start time (assumed to be done in the query)
+    for _, reserved := range reservedSlots {
+        // Add available slot before the reservation
+        if currentStart.Before(reserved.start) {
+            availableSlots = append(availableSlots, AvailableSlot{
+                StartTime: currentStart.Format("15:04"),
+                EndTime:   reserved.start.Format("15:04"),
+            })
+        }
+        
+        // Move current start to the end of this reserved slot
+        currentStart = max(currentStart, reserved.end)
+    }
+
+    // Add final slot if there's remaining time after last reservation
+    if currentStart.Before(availableEnd) {
+        availableSlots = append(availableSlots, AvailableSlot{
+            StartTime: currentStart.Format("15:04"),
+            EndTime:   availableEnd.Format("15:04"),
+        })
+    }
+
+    return availableSlots
+}
+
+// Helper function to get max of two times
+func max(a, b time.Time) time.Time {
+    if a.After(b) {
+        return a
+    }
+    return b
+}
 
 // fetches Reserve details for the Reserves page
 func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation, error) {
@@ -125,13 +239,12 @@ func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation
 	return resList, nil
 }
 
-
-// create a new reservation
+// create a reservation
 func (s *ReserveService) CreateReservation(res *models.Reservation) (*models.Reservation, error) {
 
 	// Prepare the SQL INSERT statement
-	query := "INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status) VALUES (?, ?, ?, ?, ?)"
-	result, err := s.DB.Exec(query, res.UserId, res.CarId, res.Start, res.End, res.Status)
+	query := "INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime) VALUES (?, ?, ?, ?)"
+	result, err := s.DB.Exec(query, res.UserId, res.CarId, res.Start, res.End)
 	if err != nil {
 		log.Println("Database insert error:", err)
 		return nil, err

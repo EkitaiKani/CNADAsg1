@@ -9,7 +9,6 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <title>Drivachu</title>
     <link rel="icon" href="Images/.png" type="image/x-icon" />
-
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,166 +24,79 @@
       href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500&display=swap"
       rel="stylesheet"
     />
-
     <script
       src="https://kit.fontawesome.com/593851244e.js"
       crossorigin="anonymous"
     ></script>
+    <link rel="stylesheet" href="/static/css/mdb.min.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f6f9;
-        }
-
-        .container {
-            max-width: 600px;
-            margin-top: 50px;
-        }
-
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-body {
-            padding: 30px;
-        }
-
-        h2 {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        #month-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #007bff;
-            margin: 0;
-        }
-
-        .btn {
-            font-size: 1.1rem;
-        }
-
-        .table {
-            border-collapse: collapse;
-            width: 100%;
-            table-layout: fixed;
-            margin-top: 20px;
-        }
-
-        th, td {
-            text-align: center;
-            padding: 15px;
-            font-size: 1.1rem;
-            height: 50px;
-        }
-
-        th {
-            background-color: #007bff;
-            color: #fff;
-        }
-
-        td {
-            cursor: pointer;
-            background-color: #fff;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-
-        .disabled-day {
-            color: #d3d3d3;
-            pointer-events: none;
-        }
-
-        .clickable-day {
-            color: #007bff;
-        }
-
-        .clickable-day:hover {
-            background-color: #e9f5ff;
-            color: #0056b3;
-            border-radius: 50%;
-        }
-
-        .current-day {
-            background-color: #ff9800;
-            color: white;
-            font-weight: bold;
-            border-radius: 50%;
-        }
-
-        .d-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #004085;
-        }
-
-        /* Timetable Styles */
-        .timetable-container {
-            display: none;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .timetable-container.show {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .timetable-container h4 {
-            text-align: center;
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-        }
-
-        .timetable-container ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .timetable-container li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .timetable-container .close-btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin: 10px auto;
-            display: block;
-            border-radius: 5px;
-        }
-
-        .timetable-container .close-btn:hover {
-            background-color: #e53935;
-        }
+      /* Clickable day and hover behavior */
+      .clickable-day {
+        color: #007bff;
+      }
+      .clickable-day:hover {
+        background-color: #e9f5ff;
+        color: #0056b3;
+      }
+      .current-day {
+        background-color: #ff9800;
+        color: white;
+        font-weight: bold;
+      }
+      .disabled-day {
+        color: #d3d3d3;
+        pointer-events: none;
+      }
+      /* Timetable Styles */
+      .timetable-container {
+        display: none;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+      .timetable-container.show {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .timetable-container h4 {
+        text-align: center;
+        font-size: 1.6rem;
+        margin-bottom: 20px;
+      }
+      .timetable-container ul {
+        list-style: none;
+        padding: 0;
+      }
+      .timetable-container li {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+      .timetable-container .close-btn {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        margin: 10px auto;
+        display: block;
+        border-radius: 5px;
+      }
+      .timetable-container .close-btn:hover {
+        background-color: #e53935;
+      }
     </style>
-
-    <link rel="stylesheet" href="/static/css/mdb.min.css" />
   </head>
 
   <body style="background-color: #f4f7fc">
@@ -195,185 +107,274 @@
       {{ template "navbar" }}
     </nav>
 
-    <!-- main content goes here -->
     <main>
-    
-    <div class="container">
-        <h2>Reservation</h2>
+      <div class="container">
+        <h2>View Availability</h2>
         <div class="card">
-            <div class="card-body">
-                <div class="d-flex">
-                    <button class="btn btn-primary" id="prev-month">Previous</button>
-                    <h4 id="month-name">December 2024</h4>
-                    <button class="btn btn-primary" id="next-month">Next</button>
-                </div>
-                <table class="table table-bordered mt-3">
-                    <thead>
-                        <tr>
-                            <th>Sun</th>
-                            <th>Mon</th>
-                            <th>Tue</th>
-                            <th>Wed</th>
-                            <th>Thu</th>
-                            <th>Fri</th>
-                            <th>Sat</th>
-                        </tr>
-                    </thead>
-                    <tbody id="calendar-body">
-                        <!-- Calendar days will be populated here -->
-                    </tbody>
-                </table>
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-primary" id="prev-month"><</button>
+              <h4 id="month-name">December 2024</h4>
+              <button class="btn btn-primary" id="next-month">></button>
             </div>
+            <table class="table table-bordered mt-3">
+              <thead>
+                <tr>
+                  <th>Sun</th>
+                  <th>Mon</th>
+                  <th>Tue</th>
+                  <th>Wed</th>
+                  <th>Thu</th>
+                  <th>Fri</th>
+                  <th>Sat</th>
+                </tr>
+              </thead>
+              <tbody id="calendar-body">
+                <!-- Calendar days will be populated here -->
+              </tbody>
+            </table>
+          </div>
         </div>
+        <div class="container m-2">
+          <div class="row">
+            <!-- Time Range Picker Section -->
+            <div class="col-md-6 p-1">
+              <h2>Reservation for {{ .car.model }}</h2>
+              <h5>Select Time Range</h5>
+              <form
+                id="res-date"
+                action="/reserve/car/{{.car.id}}"
+                method="GET"
+              >
+                <input
+                  type="hidden"
+                  id="CarId"
+                  name="CarId"
+                  value="{{ .car.id }}"
+                />
+                <div class="input-group">
+                  <input
+                    type="text"
+                    id="time-range-start"
+                    class="form-control"
+                    placeholder="Start Time"
+                    name="Start"
+                  />
+                  <span class="input-group-text">to</span>
+                  <input
+                    type="text"
+                    id="time-range-end"
+                    class="form-control"
+                    placeholder="End Time"
+                    name="End"
+                  />
+                </div>
+                <button
+                  class="btn btn-primary mt-2"
+                  id="submit-time-range"
+                  type="submit"
+                >
+                  Submit
+                </button>
+              </form>
+            </div>
 
-        <!-- Timetable Section (Initially hidden) -->
-        <div class="timetable-container" id="timetable-container">
-            <h4 id="selected-date"></h4>
-            <ul id="timetable-list">
-                {{ if .reservation}}
-                <!-- Timetable items will go here -->
-                <li>Event 1 - 9:00 AM</li>
-                <li>Event 2 - 1:00 PM</li>
-                <li>Event 3 - 4:00 PM</li>
-
-                {{else}}
-                <li></li>
-
-                {{end}}
-            </ul>
-            <button class="close-btn" id="close-timetable">Close</button>
+            <!-- Timetable Section -->
+            <div class="col-md-6">
+              <div class="timetable-container" id="timetable-container">
+                <h4 id="selected-date">Selected Date:</h4>
+                <ul id="timetable-list">
+                  <!-- List of timetable slots will go here -->
+                </ul>
+                <button class="btn btn-danger" id="close-timetable">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
+      </div>
+    </main>
 
     <script>
-        // Initialize current date
-        let currentDate = new Date();
+      document.addEventListener("DOMContentLoaded", () => {
+        const currentDate = new Date();
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
 
-        // Function to render the calendar
+        const monthNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+
+        const elements = {
+          monthName: document.getElementById("month-name"),
+          calendarBody: document.getElementById("calendar-body"),
+          timetableContainer: document.getElementById("timetable-container"),
+          selectedDate: document.getElementById("selected-date"),
+          timetableList: document.getElementById("timetable-list"),
+          closeTimetableBtn: document.getElementById("close-timetable"),
+          prevMonthBtn: document.getElementById("prev-month"),
+          nextMonthBtn: document.getElementById("next-month"),
+        };
+
         function renderCalendar(month, year) {
-            let firstDay = new Date(year, month).getDay();
-            let lastDate = new Date(year, month + 1, 0).getDate();
-            let currentDay = currentDate.getDate();
-            let currentMonth = currentDate.getMonth();
-            let currentYear = currentDate.getFullYear();
+          const firstDay = new Date(year, month).getDay();
+          const lastDate = new Date(year, month + 1, 0).getDate();
 
-            // Set the month name in the header
-            let monthNames = [
-                "January", "February", "March", "April", "May", "June", 
-                "July", "August", "September", "October", "November", "December"
-            ];
-            document.getElementById("month-name").innerText = `${monthNames[month]} ${year}`;
+          elements.monthName.textContent = `${monthNames[month]} ${year}`;
+          elements.calendarBody.innerHTML = "";
 
-            // Clear the previous calendar body
-            let calendarBody = document.getElementById("calendar-body");
-            calendarBody.innerHTML = "";
+          let date = 1;
+          for (let i = 0; i < 6; i++) {
+            const row = document.createElement("tr");
+            for (let j = 0; j < 7; j++) {
+              const cell = document.createElement("td");
 
-            // Create the rows of the calendar
-            let date = 1;
-            for (let i = 0; i < 6; i++) {
-                let row = document.createElement("tr");
+              if ((i === 0 && j >= firstDay) || (i > 0 && date <= lastDate)) {
+                cell.textContent = date;
 
-                for (let j = 0; j < 7; j++) {
-                    let cell = document.createElement("td");
-
-                    // Fill in the dates
-                    if (i === 0 && j >= firstDay) {
-                        cell.innerText = date++;
-                    } else if (i > 0 && date <= lastDate) {
-                        cell.innerText = date++;
-                    }
-
-                    // Get the current date
-                    let cellDate = new Date(year, month, cell.innerText);
-
-                    // Disable past dates
-                    if (cell.innerText && cellDate < currentDate) {
-                        cell.classList.add("disabled-day");
-                    } else if (cell.innerText) {
-                        cell.classList.add("clickable-day");
-                        cell.addEventListener("click", function() {
-                            showTimetable(cell.innerText, monthNames[month], year);
-                        });
-                    }
-
-                    // Highlight current day
-                    if (cell.innerText == currentDay && month == currentMonth && year == currentYear) {
-                        cell.classList.add("current-day");
-                    }
-
-                    // Append the cell to the row
-                    row.appendChild(cell);
+                const cellDate = new Date(year, month, date);
+                if (cellDate < currentDate) {
+                  cell.classList.add("disabled-day");
+                } else {
+                  cell.classList.add("clickable-day");
+                  cell.addEventListener("click", () =>
+                    showTimetable(date, monthNames[month], year)
+                  );
                 }
 
-                // Append the row to the calendar body
-                calendarBody.appendChild(row);
+                if (
+                  date === currentDate.getDate() &&
+                  month === currentDate.getMonth() &&
+                  year === currentDate.getFullYear()
+                ) {
+                  cell.classList.add("current-day");
+                }
 
-                if (date > lastDate) break;
+                date++;
+              }
+
+              row.appendChild(cell);
             }
+            elements.calendarBody.appendChild(row);
+            if (date > lastDate) break;
+          }
         }
 
-        // Function to show the timetable when a date is clicked
-        function showTimetable(day, month, year) {
-            let timetableContainer = document.getElementById("timetable-container");
-            let selectedDate = `${month} ${day}, ${year}`;
-            document.getElementById("selected-date").innerText = `Timetable for ${selectedDate}`;
-            timetableContainer.style.display = 'block'; // Show timetable
+        async function showTimetable(day, month, year) {
+          const monthIndex = monthNames.indexOf(month) + 1;
+          const carId = new URLSearchParams(window.location.search).get("id");
+          const apiUrl = `http://localhost:8081/api/v1/reservation/available-times?carId=${carId}&year=${year}&month=${monthIndex}&day=${day}`;
 
-            // Optionally, you can dynamically generate timetable events here based on the date
+          try {
+            const response = await fetch(apiUrl, { mode: "cors" });
+            if (!response.ok)
+              throw new Error(`Error fetching data: ${response.statusText}`);
+
+            const data = await response.json();
+            elements.selectedDate.textContent = `${month} ${day}, ${year}`;
+            elements.timetableList.innerHTML = "";
+
+            Object.values(data).forEach((timeSlot) => {
+              const listItem = document.createElement("li");
+              listItem.textContent = `${timeSlot.start_time} - ${timeSlot.end_time}`;
+              elements.timetableList.appendChild(listItem);
+            });
+
+            // Remove previous hidden date input if exists
+            const prevInput = document.getElementById("get-date");
+            if (prevInput) prevInput.remove();
+
+            // Create new hidden input for selected date
+            const hiddenInput = document.createElement("input");
+            hiddenInput.type = "hidden";
+            hiddenInput.id = "get-date";
+            hiddenInput.name = "date";
+            hiddenInput.value = new Date(
+              year,
+              monthIndex - 1,
+              day
+            ).toISOString();
+
+            document.getElementById("res-date").appendChild(hiddenInput);
+            elements.timetableContainer.classList.add("show");
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to fetch available time slots.");
+          }
         }
 
-        // Close timetable when the close button is clicked
-        document.getElementById("close-timetable").addEventListener("click", function() {
-            document.getElementById("timetable-container").style.display = 'none'; // Hide timetable
-        });
+        function initEventListeners() {
+          elements.closeTimetableBtn.addEventListener("click", () =>
+            elements.timetableContainer.classList.remove("show")
+          );
 
-        // Navigate to the next month
-        document.getElementById("next-month").addEventListener("click", function() {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
+          elements.prevMonthBtn.addEventListener("click", () => {
+            currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            currentYear -= currentMonth === 11 ? 1 : 0;
             renderCalendar(currentMonth, currentYear);
-        });
+          });
 
-        // Navigate to the previous month
-        document.getElementById("prev-month").addEventListener("click", function() {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
+          elements.nextMonthBtn.addEventListener("click", () => {
+            currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+            currentYear += currentMonth === 0 ? 1 : 0;
             renderCalendar(currentMonth, currentYear);
-        });
+          });
+        }
 
-        // Initial render
+        function initTimePickers() {
+          flatpickr("#time-range-start", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+          });
+
+          flatpickr("#time-range-end", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+          });
+        }
+
+        // Initialize everything
         renderCalendar(currentMonth, currentYear);
+        initEventListeners();
+        initTimePickers();
+      });
     </script>
+
+    <!-- Footer -->
+    <footer class="text-center text-white" style="background-color: #d1d8e0">
+      {{template "footer"}}
+    </footer>
+
+    <!-- MDB Scripts -->
+    <script type="text/javascript" src="/static/js/mdb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- jQuery and Bootstrap Scripts -->
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
+      crossorigin="anonymous"
+    ></script>
   </body>
-  <footer class="text-center text-white" style="background-color: #d1d8e0">
-    {{template "footer"}}
-  </footer>
-
-  <!-- MDB -->
-  <script type="text/javascript" src="/static/js/mdb.min.js"></script>
-
-  <!-- Custom scripts -->
-  <script
-    src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
-    integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
-    crossorigin="anonymous"
-  ></script>
 </html>

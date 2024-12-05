@@ -16,6 +16,12 @@ type ReserveAPI struct {
 	Service *services.ReserveService
 }
 
+// Define a structure to represent available time slots
+type AvailableSlot struct {
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
+}
+
 func (h *ReserveAPI) CarReservations(w http.ResponseWriter, r *http.Request) {
 
 	// Get id from URL
@@ -151,6 +157,68 @@ func (h *ReserveAPI) CreateReservation(w http.ResponseWriter, r *http.Request) {
 
 	// Encode the response and handle errors
 	if err := json.NewEncoder(w).Encode(jsonBody); err != nil {
+		log.Println("JSON encoding error:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+// Handler for fetching available times
+func (h *ReserveAPI) GetAvailableTimes(w http.ResponseWriter, r *http.Request) {
+	// Get query parameters from the request
+	carID := r.URL.Query().Get("carId")
+	year := r.URL.Query().Get("year")
+	month := r.URL.Query().Get("month")
+	day := r.URL.Query().Get("day")
+
+	if carID == "" || year == "" || month == "" || day == "" {
+		http.Error(w, "Missing required query parameters", http.StatusBadRequest)
+		return
+	}
+
+	// Convert parameters to appropriate types
+	carIDInt, err := strconv.Atoi(carID)
+	if err != nil {
+		http.Error(w, "Invalid car_id", http.StatusBadRequest)
+		return
+	}
+
+	yearInt, err := strconv.Atoi(year)
+	if err != nil {
+		http.Error(w, "Invalid year", http.StatusBadRequest)
+		return
+	}
+
+	monthInt, err := strconv.Atoi(month)
+	if err != nil {
+		http.Error(w, "Invalid month", http.StatusBadRequest)
+		return
+	}
+
+	dayInt, err := strconv.Atoi(day)
+	if err != nil {
+		http.Error(w, "Invalid day", http.StatusBadRequest)
+		return
+	}
+
+	// Get the available time slots
+	availableSlots, err := h.Service.GetAvailableTimeSlots(carIDInt, yearInt, monthInt, dayInt)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, "Error fetching available times", http.StatusInternalServerError)
+		return
+	}
+
+	// Secure HTTP headers
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+	w.Header().Set("X-XSS-Protection", "1; mode=block")
+
+	//Allow CORS here By * or specific origin
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Encode the response and handle errors
+	if err := json.NewEncoder(w).Encode(availableSlots); err != nil {
 		log.Println("JSON encoding error:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}

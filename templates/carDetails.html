@@ -112,9 +112,10 @@
               </p>
 
               <!-- Reservation Form -->
-              <form>
+              <form action="/reserve" method="GET">
+                <input type="hidden" id="get-id" name="id" value="{{ .car.id }}" />
                 <button type="submit" class="btn btn-primary btn-lg">
-                  Reserve Now
+                  View Availability
                 </button>
               </form>
             </div>
