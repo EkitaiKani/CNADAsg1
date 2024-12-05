@@ -31,6 +31,7 @@ func main() {
 	// User routes
 	r.HandleFunc("/api/v1/user/{id}", userAPI.UserDetails).Methods("GET")
 	r.HandleFunc("/api/v1/user/", userAPI.LoginUser).Methods("POST")
+	r.HandleFunc("/api/v1/user/{id}", userAPI.RegisterUser).Methods("POST")
 
 	// Reservation routs
 	r.HandleFunc("/api/v1/reservation/user/{id}", resAPI.UserReservations).Methods("GET")

@@ -44,6 +44,7 @@ func (h *UserAPI) RegisterUser(w http.ResponseWriter, r *http.Request) {
 			"message": "Account was not created. Check your input fields and try again.",
 			"error":   true,
 		}
+		log.Print("Internal server error:", err)
 	} else {
 		// After successful creation, render the user in the template
 		jsonBody = map[string]interface{}{
@@ -88,6 +89,7 @@ func (h *UserAPI) LoginUser(w http.ResponseWriter, r *http.Request) {
 			"message": "Username or password is incorrect.",
 			"error":   true,
 		}
+		log.Print("Internal server error:", err)
 
 	} else {
 		// After successful creation, render the user in the template
@@ -133,6 +135,7 @@ func (h *UserAPI) UserDetails(w http.ResponseWriter, r *http.Request) {
 			"message": "Error getting user details, please try again",
 			"error":   true,
 		}
+		log.Print("Internal server error:", err)
 
 	} else { // Render user details
 		jsonBody = map[string]interface{}{

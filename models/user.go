@@ -5,7 +5,7 @@ import "database/sql"
 // for user table
 type User struct {
 	UserId    int    `json:"id"`
-	UserEmail string `json:"name"`
+	UserEmail string `json:"email"`
 	// PhoneNo      int          `json:"phone"`
 	UserName     string       `json: username`
 	HashPassword string       `json:"pw"`

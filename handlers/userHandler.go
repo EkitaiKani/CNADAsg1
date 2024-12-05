@@ -5,6 +5,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,7 +14,6 @@ import (
 
 	"CNADASG1/models"
 	"CNADASG1/templates"
-	"CNADASG1/utils"
 
 	"github.com/gorilla/sessions"
 )
@@ -32,13 +33,14 @@ type login struct {
 }
 
 type UserHandler struct {
-	BaseURL string
+	Templates *template.Template
+	BaseURL   string
 }
 
 // NewUserHandler is a constructor function to create a new UserHandler with the API base URL
 func NewUserHandler(baseURL string) *UserHandler {
 	return &UserHandler{
-		BaseURL: baseURL + "/users/", // Store the base URL
+		BaseURL: baseURL, // Store the base URL
 	}
 }
 
@@ -88,37 +90,10 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		DateofBirth:  dob,
 	}
 
-	
-}
-
-func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// If the method is POST, handle form submission
-	// Parse the form data
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Unable to parse form", http.StatusBadRequest)
-		return
-	}
-
-	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid username")
-		return
-	}
-
-	// Retrieve form values by their "name" attribute
-	var l login
-	l.Username = r.FormValue("Username")
-	l.Password = r.FormValue("Password")
-
 	var response map[string]interface{}
-	url := h.BaseURL
+	url := h.BaseURL + "user/" + user.UserName
 	client := &http.Client{}
-	postBody, _ := json.Marshal(l)
+	postBody, _ := json.Marshal(user)
 	resBody := bytes.NewBuffer(postBody)
 
 	if req, err := http.NewRequest("POST", url, resBody); err == nil {
@@ -136,6 +111,58 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	renderErr := templates.Templates.ExecuteTemplate(w, "register.html", response)
+	if renderErr != nil {
+		http.Error(w, renderErr.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// If the method is POST, handle form submission
+	// Parse the form data
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve form values by their "name" attribute
+	var l login
+	l.Username = r.FormValue("Username")
+	l.Password = r.FormValue("Password")
+
+	// log.Println("Received username:", l.Username)
+	// log.Println("Received password:", l.Password)
+
+	var response map[string]interface{}
+	url := h.BaseURL + "user/"
+	// log.Print(url)
+
+	client := &http.Client{}
+	postBody, _ := json.Marshal(l)
+	resBody := bytes.NewBuffer(postBody)
+
+	if req, err := http.NewRequest("POST", url, resBody); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &response)
+			// log.Println("Raw Response Body:", string(body))
+
+		}
+	}
+
 	if response["error"] == "true" {
 		renderErr := templates.Templates.ExecuteTemplate(w, "login.html", response)
 		if renderErr != nil {
@@ -147,35 +174,38 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// log.Print(response)
 
 	// Create a new session
-	session, err := store.Get(r, "user-session")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	// Store the user ID in the session
-	session.Values["user_id"] = response["user"]
-	// Retrieve nested "zipcode" map
-	if user, ok := response["user"].(map[string]interface{}); ok {
-		// Retrieve "code" from the "zipcode" map
-		if id, ok := user["id"].(int); ok {
-			session.Values["user_id"] = id
-		}
-	}
+	// Retrieve nested map
 
-	// Save the session
-	err = session.Save(r, w)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	// If successful, set user_id in session
+	if user, ok := response["user"].(map[string]interface{}); ok {
+		if id, ok := user["id"]; ok {
+			session, err := store.Get(r, "user-session")
+			if err != nil {
+				log.Print("Error retrieving session:", err)
+				http.Error(w, "Session error", http.StatusInternalServerError)
+				return
+			}
+
+			// Convert id to string and set it in the session
+			session.Values["user_id"] = fmt.Sprintf("%v", id)
+			// log.Printf("Setting session user_id: %v", session.Values["user_id"])
+
+			// Save the session
+			err = session.Save(r, w)
+			if err != nil {
+				log.Print("Error saving session:", err)
+				http.Error(w, "Session error", http.StatusInternalServerError)
+				return
+			}
+
+		}
 	}
 
 	// After successful login
 	// log.Print(user.UserName)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+
 }
 
 func (h *UserHandler) LogOutUser(w http.ResponseWriter, r *http.Request) {
@@ -200,58 +230,48 @@ func (h *UserHandler) LogOutUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-// func (h *UserHandler) UserDetails(w http.ResponseWriter, r *http.Request) {
-// 	session, err := store.Get(r, "user-session")
-// 	if err != nil {
-// 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-// 		return
-// 	}
+func (h *UserHandler) UserDetails(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "user-session")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-// 	// Convert userid from session state to int
-// 	id, ok := session.Values["user_id"].(int)
-// 	// log.Print(ok)
-// 	if !ok {
-// 		// Clear the session
-// 		session.Values = make(map[interface{}]interface{})
-// 		session.Options.MaxAge = -1 // Expire the session immediately
+	// Retrieve the user ID as a string from session
+	userID, ok := session.Values["user_id"].(string)
+	if !ok {
+		// If the user_id is not found or has an incorrect type
+		log.Print(session.Values["user_id"]) // For debugging
+		http.Error(w, "User not logged in", http.StatusUnauthorized)
+		return
+	}
 
-// 		// Save the session before redirecting
-// 		if err := session.Save(r, w); err != nil {
-// 			http.Error(w, "Session save error", http.StatusInternalServerError)
-// 			return
-// 		}
+	// log.Print(id)
+	// get user details from api
+	var response map[string]interface{}
+	url := h.BaseURL + "user/" + string(userID)
+	client := &http.Client{}
 
-// 		// Redirect to login or home page
-// 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-// 		return
-// 	}
+	if req, err := http.NewRequest("GET", url, nil); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
 
-// 	// log.Print(id)
+			if err != nil {
+				log.Print("An error occured")
+			}
 
-// 	// get user details
-// 	user, err := h.Service.GetUserDetails(id)
-// 	// log.Print(user.UserEmail)
+			// unmarshal response data
+			err = json.Unmarshal(body, &response)
 
-// 	if err != nil {
-// 		// Log the actual error
-// 		renderErr := templates.Templates.ExecuteTemplate(w, "profile.html", map[string]interface{}{
-// 			"message": "Error getting user details, please try again",
-// 			"error":   true,
-// 		})
-// 		if renderErr != nil {
-// 			http.Error(w, "Template render error", http.StatusInternalServerError)
-// 		}
-// 		return
-// 	}
+		}
+	}
 
-// 	// Render user details
-// 	if err := templates.Templates.ExecuteTemplate(w, "profile.html", map[string]interface{}{
-// 		"user":  user,
-// 		"error": false,
-// 	}); err != nil {
-// 		http.Error(w, "Template render error", http.StatusInternalServerError)
-// 	}
-// }
+	// Render user details
+	if err := templates.Templates.ExecuteTemplate(w, "profile.html", response); err != nil {
+		http.Error(w, "Template render error", http.StatusInternalServerError)
+	}
+}
 
 // Middleware to check if user is logged in
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {

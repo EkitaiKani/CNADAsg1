@@ -6,7 +6,6 @@ import (
 
 	"CNADASG1/config"
 	"CNADASG1/handlers"
-	"CNADASG1/services"
 	"CNADASG1/templates"
 
 	"github.com/gorilla/mux"
@@ -36,9 +35,9 @@ func main() {
 	r.Use(handlers.NotFoundMiddleware)
 
 	// Serve static files (CSS, JS, images)
-    staticHandler := http.FileServer(http.Dir("./static"))
-    r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticHandler))
-	
+	staticHandler := http.FileServer(http.Dir("./static"))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticHandler))
+
 	// home routes
 	r.HandleFunc("/", homeHandler.Home).Methods("GET")
 	r.HandleFunc("/login", homeHandler.Login).Methods("GET")
@@ -54,9 +53,6 @@ func main() {
 	// Car routes
 	r.HandleFunc("/cars", carHandler.Cars).Methods("GET")
 	r.HandleFunc("/cars/{id}", carHandler.CarDetails).Methods("GET")
-
-
-
 
 	// Start server
 	log.Println("Server starting on :8080")
