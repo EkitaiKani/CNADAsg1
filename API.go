@@ -19,10 +19,12 @@ func main() {
 
 	// Initialize services
 	userService := &services.UserService{DB: db}
+	carService := &services.CarService{DB: db}
 	resService := &services.ReserveService{DB: db}
 
 	// Initialize apis
 	userAPI := &apis.UserAPI{Service: userService}
+	carAPI := &apis.CarAPI{Service: carService}
 	resAPI := &apis.ReserveAPI{Service: resService}
 
 	// Create router
@@ -32,6 +34,10 @@ func main() {
 	r.HandleFunc("/api/v1/user/{id}", userAPI.UserDetails).Methods("GET")
 	r.HandleFunc("/api/v1/user/", userAPI.LoginUser).Methods("POST")
 	r.HandleFunc("/api/v1/user/{id}", userAPI.RegisterUser).Methods("POST")
+
+	// Car routes
+	r.HandleFunc("/api/v1/car/", carAPI.Cars).Methods("GET")
+	r.HandleFunc("/api/v1/car/{id}", carAPI.CarDetails).Methods("GET")
 
 	// Reservation routs
 	r.HandleFunc("/api/v1/reservation/user/{id}", resAPI.UserReservations).Methods("GET")

@@ -19,7 +19,7 @@ func (s *CarService) GetCars() (map[int]models.Car, error) {
 	carList := make(map[int]models.Car)
 
 	// Get cars
-	query := "SELECT car_id, car_model FROM cars"
+	query := "SELECT car_id, car_model, rate FROM cars"
 	rows, err := s.DB.Query(query)
 	if err != nil {
 		log.Println("Row scan error:", err)
@@ -29,8 +29,9 @@ func (s *CarService) GetCars() (map[int]models.Car, error) {
 	for rows.Next() {
 		var carId int
 		var carModel string
+		var rate int
 
-		if err := rows.Scan(&carId, &carModel); err != nil {
+		if err := rows.Scan(&carId, &carModel, &rate); err != nil {
 			log.Println("Row scan error:", err)
 			return nil, err
 		}
@@ -39,6 +40,7 @@ func (s *CarService) GetCars() (map[int]models.Car, error) {
 		carList[carId] = models.Car{
 			CarId:    carId,
 			CarModel: carModel,
+			Rate:     rate,
 		}
 	}
 

@@ -2,7 +2,6 @@ package apis
 
 import (
 	"encoding/json"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,8 +12,7 @@ import (
 )
 
 type CarAPI struct {
-	Templates *template.Template
-	Service   *services.CarService
+	Service *services.CarService
 }
 
 func (h *CarAPI) Cars(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +27,7 @@ func (h *CarAPI) Cars(w http.ResponseWriter, r *http.Request) {
 			"message": "Error getting cars, please try again",
 			"error":   true,
 		}
+		log.Print("Internal server error:", err)
 	} else if len(carList) == 0 {
 		// if there are no cars
 		jsonBody = map[string]interface{}{
@@ -79,6 +78,7 @@ func (h *CarAPI) CarDetails(w http.ResponseWriter, r *http.Request) {
 			"message": "Error getting car details, please try again",
 			"error":   true,
 		}
+		log.Print("Internal server error:", err)
 	} else {
 		// Render car details
 		jsonBody = map[string]interface{}{

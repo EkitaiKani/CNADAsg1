@@ -51,8 +51,7 @@ func main() {
 	r.HandleFunc("/logout", userHandler.LogOutUser).Methods("GET")
 
 	// Car routes
-	r.HandleFunc("/cars", carHandler.Cars).Methods("GET")
-	r.HandleFunc("/cars/{id}", carHandler.CarDetails).Methods("GET")
+	r.HandleFunc("/cars", carHandler.HandleCars).Methods("GET")
 
 	// Start server
 	log.Println("Server starting on :8080")
