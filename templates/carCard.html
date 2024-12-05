@@ -8,8 +8,8 @@
   />
   <div class="card-body">
     <div class="d-flex justify-content-between mb-3">
-      <h5 class="mb-0">{{ $car.CarModel }}</h5>
-      <h5 class="text-dark mb-0">$999</h5>
+      <h5 class="mb-0">{{ $car.model }}</h5>
+      <h5 class="text-dark mb-0">{{$car.Rate}}$/h</h5>
     </div>
 
     <div class="d-flex justify-content-between mb-2">
@@ -19,8 +19,8 @@
     </div>
 
     <hr />
-    <form action="/cars/{{ $car.CarId }}" method="GET">
-      <input type="hidden" id="get-id" name="id" value="{{ $car.CarId }}" />
+    <form action="/cars" method="GET">
+      <input type="hidden" id="get-id" name="id" value="{{ $key }}" />
       <button
         type="submit"
         data-mdb-button-init

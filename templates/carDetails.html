@@ -88,12 +88,28 @@
           <!-- Car Details Section -->
           <div class="col-md-6 product-info">
             <div>
-              <h2 class="mb-3">{{.car.CarModel}}</h2>
-              <p><strong>License Plate:</strong> {{.car.LiscencePlate}}</p>
-              <p><strong>Status:</strong> {{.car.Status}}</p>
-              <p><strong>Charge Level:</strong> {{.car.Charge}}</p>
-              <p><strong>Rate:</strong> {{.car.Rate}}</p>
-              <p><strong>Cleanliness:</strong> {{.car.Cleanliness}}</p>
+              <h2 class="mb-3">{{.car.model}}</h2>
+
+              <p>
+                <strong>License Plate:</strong>
+                <span class="float-end">{{.car.plate}}</span>
+              </p>
+              <p>
+                <strong>Status:</strong>
+                <span class="float-end">{{.car.Status}}</span>
+              </p>
+              <p>
+                <strong>Charge Level:</strong>
+                <span class="float-end">{{.car.charge}}</span>
+              </p>
+              <p>
+                <strong>Rate:</strong>
+                <span class="float-end">{{.car.Rate}}</span>
+              </p>
+              <p>
+                <strong>Cleanliness:</strong>
+                <span class="float-end">{{.car.Cleanliness}}</span>
+              </p>
 
               <!-- Reservation Form -->
               <form>
