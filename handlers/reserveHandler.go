@@ -62,12 +62,25 @@ func (h *ReserveHandler) CarReservations(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *ReserveHandler) UserReservations(w http.ResponseWriter, r *http.Request) {
-	// get id of car
-	id := r.FormValue("userid")
+	session, err := store.Get(r, "user-session")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-	// get car's reservation details
+	// Retrieve the user ID as a string from session
+	userID, ok := session.Values["user_id"].(string)
+	if !ok {
+		// If the user_id is not found or has an incorrect type
+		// log.Print(session.Values["user_id"]) // For debugging
+		http.Error(w, "User not logged in", http.StatusUnauthorized)
+		return
+	}
+
+	// get reservation details
 	var response map[string]interface{}
-	url := h.BaseURL + "user/" + id
+	url := h.BaseURL + "reservation/user/" + userID
+	// log.Print(url)
 	client := &http.Client{}
 
 	if req, err := http.NewRequest("GET", url, nil); err == nil {
@@ -84,7 +97,6 @@ func (h *ReserveHandler) UserReservations(w http.ResponseWriter, r *http.Request
 
 		}
 	}
-	log.Print(response)
 
 	// Render cars
 	if err := templates.Templates.ExecuteTemplate(w, "userReservations.html", response); err != nil {
@@ -99,7 +111,7 @@ func (h *ReserveHandler) AllReservations(w http.ResponseWriter, r *http.Request)
 
 	// get car's reservation details
 	var response map[string]interface{}
-	url := h.BaseURL + "/user/all/" + id
+	url := h.BaseURL + "reservation/user/all/" + id
 	client := &http.Client{}
 
 	if req, err := http.NewRequest("GET", url, nil); err == nil {
@@ -116,7 +128,7 @@ func (h *ReserveHandler) AllReservations(w http.ResponseWriter, r *http.Request)
 
 		}
 	}
-	log.Print(response)
+	// log.Print(response)
 
 	// Render cars
 	if err := templates.Templates.ExecuteTemplate(w, "reservation.html", response); err != nil {

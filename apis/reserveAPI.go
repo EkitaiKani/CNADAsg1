@@ -137,7 +137,7 @@ func (h *ReserveAPI) AllReservations(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Log the actual error
 		jsonBody = map[string]interface{}{
-			"message": "Error getting cars, please try again",
+			"message": "Error getting reservations, please try again",
 			"error":   true,
 		}
 		log.Print("Internal server error:", err)
@@ -268,6 +268,47 @@ func (h *ReserveAPI) GetAvailableTimes(w http.ResponseWriter, r *http.Request) {
 
 	// Encode the response and handle errors
 	if err := json.NewEncoder(w).Encode(availableSlots); err != nil {
+		log.Println("JSON encoding error:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *ReserveAPI) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+	// Decode the incoming JSON request body
+	var res *models.Reservation
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&res); err != nil {
+		log.Println("JSON decoding error:", err)
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Try to create the user using the service
+	createdRes, err := h.Service.UpdateReservationStatus(res)
+	jsonBody := make(map[string]interface{})
+	if err != nil {
+		jsonBody = map[string]interface{}{
+			"message": "Reservation was not updated. Check your input fields and try again.",
+			"error":   true,
+		}
+		log.Print("Internal server error:", err)
+	} else {
+		// After successful creation, render the user in the template
+		jsonBody = map[string]interface{}{
+			"res":     createdRes,
+			"message": "Reservation updated successfully",
+			"error":   false,
+		}
+	}
+
+	// Secure HTTP headers
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+	w.Header().Set("X-XSS-Protection", "1; mode=block")
+
+	// Encode the response and handle errors
+	if err := json.NewEncoder(w).Encode(jsonBody); err != nil {
 		log.Println("JSON encoding error:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
