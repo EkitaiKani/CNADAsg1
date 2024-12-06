@@ -67,7 +67,7 @@ func (h *ReserveHandler) UserReservations(w http.ResponseWriter, r *http.Request
 
 	// get car's reservation details
 	var response map[string]interface{}
-	url := h.BaseURL + "reservation/" + "/user/" + id
+	url := h.BaseURL + "user/" + id
 	client := &http.Client{}
 
 	if req, err := http.NewRequest("GET", url, nil); err == nil {
@@ -87,7 +87,7 @@ func (h *ReserveHandler) UserReservations(w http.ResponseWriter, r *http.Request
 	log.Print(response)
 
 	// Render cars
-	if err := templates.Templates.ExecuteTemplate(w, "reservation.html", response); err != nil {
+	if err := templates.Templates.ExecuteTemplate(w, "userReservations.html", response); err != nil {
 		http.Error(w, "Template render error", http.StatusInternalServerError)
 	}
 
@@ -99,7 +99,7 @@ func (h *ReserveHandler) AllReservations(w http.ResponseWriter, r *http.Request)
 
 	// get car's reservation details
 	var response map[string]interface{}
-	url := h.BaseURL + "reservation/" + "/user/all/" + id
+	url := h.BaseURL + "/user/all/" + id
 	client := &http.Client{}
 
 	if req, err := http.NewRequest("GET", url, nil); err == nil {

@@ -121,6 +121,55 @@ func (h *ReserveAPI) UserReservations(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *ReserveAPI) AllReservations(w http.ResponseWriter, r *http.Request) {
+	// Get id from URL
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// get car's reservation details
+	resList, err := h.Service.GetAllReservations(id)
+	jsonBody := make(map[string]interface{})
+
+	if err != nil {
+		// Log the actual error
+		jsonBody = map[string]interface{}{
+			"message": "Error getting cars, please try again",
+			"error":   true,
+		}
+		log.Print("Internal server error:", err)
+
+	} else if len(resList) == 0 {
+		// if there are no cars
+		jsonBody = map[string]interface{}{
+			"message": "You have not made any reservations.",
+			"error":   false,
+		}
+
+	} else { // Render cars
+		jsonBody = map[string]interface{}{
+			"resList": resList,
+			"error":   false,
+		}
+	}
+
+	// Secure HTTP headers
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+	w.Header().Set("X-XSS-Protection", "1; mode=block")
+
+	// Encode the response and handle errors
+	if err := json.NewEncoder(w).Encode(jsonBody); err != nil {
+		log.Println("JSON encoding error:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+
+}
+
 func (h *ReserveAPI) CreateReservation(w http.ResponseWriter, r *http.Request) {
 	// Decode the incoming JSON request body
 	var res *models.Reservation
