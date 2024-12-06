@@ -183,6 +183,62 @@ func max(a, b time.Time) time.Time {
     return b
 }
 
+// fetches Reserve details for the profile page
+func (s *ReserveService) GetAllReservations(id int) (map[int]models.Reservation, error) {
+	// create dictionary to store Reservations
+	resList := make(map[int]models.Reservation)
+
+	// Get Reservations
+	query := "SELECT reservation_id, start_datetime, end_datetime FROM reservations WHERE user_id = ?"
+	rows, err := s.DB.Query(query, id)
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		r := models.Reservation{}
+		var start, end sql.NullString
+
+		if err := rows.Scan(&r.ReservationId, &start, &end); err != nil {
+			log.Printf("Row scan error: %v", err)
+			return nil, err
+		}
+
+		// Parse start datetime
+		if start.Valid {
+			parsedTime, err := time.Parse("2006-01-02 15:04:05", start.String)
+			if err != nil {
+				log.Printf("Start datetime parse error: %v", err)
+				return nil, err
+			}
+			r.Start = sql.NullTime{Time: parsedTime, Valid: true}
+		}
+
+		// Parse end datetime
+		if end.Valid {
+			parsedTime, err := time.Parse("2006-01-02 15:04:05", end.String)
+			if err != nil {
+				log.Printf("End datetime parse error: %v", err)
+				return nil, err
+			}
+			r.End = sql.NullTime{Time: parsedTime, Valid: true}
+		}
+
+		// Add Reservation to the map
+		resList[r.ReservationId] = r
+	}
+
+	// Check for errors during iteration
+	if err := rows.Err(); err != nil {
+		log.Printf("Rows iteration error: %v", err)
+		return nil, err
+	}
+
+	return resList, nil
+}
+
 // fetches Reserve details for the Reserves page
 func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation, error) {
 	// create dictionary to store Reservations

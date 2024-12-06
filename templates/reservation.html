@@ -34,24 +34,23 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-      $(document).ready(function() {
-        $("#add-update-msg").hide();
-        $("#add-error-msg").hide();
+      $(document).ready(function () {
+          $("#add-update-msg").hide();
+          $("#add-error-msg").hide();
 
-        // Go template logic to inject into JavaScript
-        {{ if .error }}
-        // If message exists, enable the button and show the error message
-        $("#user-submit").prop("disabled", false);
-          // Show error message and fade out after 5 seconds
-          $("#add-error-msg").show().fadeOut(5000);
-        {{ else }}
-           // Show success message and fade out after 5 seconds
-          $("#add-update-msg").show().fadeOut(5000);
-
-
-        {{ end }}
+          // Go template logic to inject into JavaScript
+          {{ if .error }}
+              // If message exists, enable the button and show the error message
+              $("#user-submit").prop("disabled", false);
+              // Show error message and fade out after 5 seconds
+              $("#add-error-msg").show().fadeOut(5000);
+          {{ else }}
+              // Show success message and fade out after 5 seconds
+              $("#add-update-msg").show().fadeOut(5000);
+          {{ end }}
       });
     </script>
 
@@ -60,19 +59,23 @@
       .clickable-day {
         color: #007bff;
       }
+
       .clickable-day:hover {
         background-color: #e9f5ff;
         color: #0056b3;
       }
+
       .current-day {
         background-color: #ff9800;
         color: white;
         font-weight: bold;
       }
+
       .disabled-day {
         color: #d3d3d3;
         pointer-events: none;
       }
+
       /* Timetable Styles */
       .timetable-container {
         display: none;
@@ -85,24 +88,29 @@
         transform: translateY(-20px);
         transition: opacity 0.5s ease, transform 0.5s ease;
       }
+
       .timetable-container.show {
         display: block;
         opacity: 1;
         transform: translateY(0);
       }
+
       .timetable-container h4 {
         text-align: center;
         font-size: 1.6rem;
         margin-bottom: 20px;
       }
+
       .timetable-container ul {
         list-style: none;
         padding: 0;
       }
+
       .timetable-container li {
         padding: 10px;
         border-bottom: 1px solid #ddd;
       }
+
       .timetable-container .close-btn {
         background-color: #f44336;
         color: white;
@@ -113,6 +121,7 @@
         display: block;
         border-radius: 5px;
       }
+
       .timetable-container .close-btn:hover {
         background-color: #e53935;
       }
@@ -128,100 +137,98 @@
     </nav>
 
     <main>
-      <div class="container mt-3">
+      <div class="container mt-5">
         <div class="row justify-content-center">
-          <!--If an error occurs-->
+          <!-- If an error occurs -->
           <div id="add-error-msg">
-            <div class="alert alert-danger" role="alert">
-              {{ .message}}
-            </div>
+            <div class="alert alert-danger" role="alert">{{ .message }}</div>
           </div>
 
           <div id="add-update-msg">
-            <div class="alert alert-success" role="alert">
-              {{.message}}
-            </div>
+            <div class="alert alert-success" role="alert">{{ .message }}</div>
           </div>
-        <h2>View Availability</h2>
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between">
-              <button class="btn btn-primary" id="prev-month"><</button>
-              <h4 id="month-name">December 2024</h4>
-              <button class="btn btn-primary" id="next-month">></button>
-            </div>
-            <table class="table table-bordered mt-3">
-              <thead>
-                <tr>
-                  <th>Sun</th>
-                  <th>Mon</th>
-                  <th>Tue</th>
-                  <th>Wed</th>
-                  <th>Thu</th>
-                  <th>Fri</th>
-                  <th>Sat</th>
-                </tr>
-              </thead>
-              <tbody id="calendar-body">
-                <!-- Calendar days will be populated here -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="container m-2">
-          <div class="row">
-            <!-- Time Range Picker Section -->
-            <div class="col-md-6 p-1">
-              <h2>Reservation for {{ .car.model }}</h2>
-              <h5>Select Time Range</h5>
-              <form
-                id="res-date"
-                action="/reserve/car/{{.car.id}}"
-                method="POST"
-              >
-                <input
-                  type="hidden"
-                  id="CarId"
-                  name="CarId"
-                  value="{{ .car.id }}"
-                />
-                <div class="input-group">
-                  <input
-                    type="text"
-                    id="time-range-start"
-                    class="form-control"
-                    placeholder="Start Time"
-                    name="Start"
-                  />
-                  <span class="input-group-text">to</span>
-                  <input
-                    type="text"
-                    id="time-range-end"
-                    class="form-control"
-                    placeholder="End Time"
-                    name="End"
-                  />
-                </div>
-                <button
-                  class="btn btn-primary mt-2"
-                  id="submit-time-range"
-                  type="submit"
-                >
-                  Submit
-                </button>
-              </form>
-            </div>
+          <h2>View Availability</h2>
 
-            <!-- Timetable Section -->
-            <div class="col-md-6">
-              <div class="timetable-container" id="timetable-container">
-                <h4 id="selected-date">Selected Date:</h4>
-                <ul id="timetable-list">
-                  <!-- List of timetable slots will go here -->
-                </ul>
-                <button class="btn btn-danger" id="close-timetable">
-                  Close
-                </button>
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-primary" id="prev-month"><</button>
+                <h4 id="month-name">December 2024</h4>
+                <button class="btn btn-primary" id="next-month">></button>
+              </div>
+              <table class="table table-bordered mt-3">
+                <thead>
+                  <tr>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                  </tr>
+                </thead>
+                <tbody id="calendar-body">
+                  <!-- Calendar days will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="container m-2">
+            <div class="row">
+              <!-- Time Range Picker Section -->
+              <div class="col-md-6 p-1">
+                <h2>Reservation for {{ .car.model }}</h2>
+                <h5>Select Time Range</h5>
+                <form
+                  id="res-date"
+                  action="/reserve/car/{{ .car.id }}"
+                  method="POST"
+                >
+                  <input
+                    type="hidden"
+                    id="CarId"
+                    name="CarId"
+                    value="{{ .car.id }}"
+                  />
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      id="time-range-start"
+                      class="form-control"
+                      placeholder="Start Time"
+                      name="Start"
+                    />
+                    <span class="input-group-text">to</span>
+                    <input
+                      type="text"
+                      id="time-range-end"
+                      class="form-control"
+                      placeholder="End Time"
+                      name="End"
+                    />
+                  </div>
+                  <button
+                    class="btn btn-primary mt-2"
+                    id="submit-time-range"
+                    type="submit"
+                  >
+                    Submit
+                  </button>
+                </form>
+              </div>
+
+              <!-- Timetable Section -->
+              <div class="col-md-6">
+                <div class="timetable-container" id="timetable-container">
+                  <h4 id="selected-date">Selected Date:</h4>
+                  <ul id="timetable-list">
+                    <!-- List of timetable slots will go here -->
+                  </ul>
+                  <button class="btn btn-danger" id="close-timetable">
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -413,7 +420,7 @@
 
     <!-- jQuery and Bootstrap Scripts -->
     <script
-      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
       crossorigin="anonymous"
     ></script>
     <script

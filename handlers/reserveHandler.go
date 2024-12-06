@@ -67,7 +67,39 @@ func (h *ReserveHandler) UserReservations(w http.ResponseWriter, r *http.Request
 
 	// get car's reservation details
 	var response map[string]interface{}
-	url := h.BaseURL + "/user/" + id
+	url := h.BaseURL + "reservation/" + "/user/" + id
+	client := &http.Client{}
+
+	if req, err := http.NewRequest("GET", url, nil); err == nil {
+		if res, err := client.Do(req); err == nil {
+
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &response)
+
+		}
+	}
+	log.Print(response)
+
+	// Render cars
+	if err := templates.Templates.ExecuteTemplate(w, "reservation.html", response); err != nil {
+		http.Error(w, "Template render error", http.StatusInternalServerError)
+	}
+
+}
+
+func (h *ReserveHandler) AllReservations(w http.ResponseWriter, r *http.Request) {
+	// get id of car
+	id := r.FormValue("userid")
+
+	// get car's reservation details
+	var response map[string]interface{}
+	url := h.BaseURL + "reservation/" + "/user/all/" + id
 	client := &http.Client{}
 
 	if req, err := http.NewRequest("GET", url, nil); err == nil {

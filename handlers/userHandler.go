@@ -248,7 +248,7 @@ func (h *UserHandler) UserDetails(w http.ResponseWriter, r *http.Request) {
 
 	// log.Print(id)
 	// get user details from api
-	var response map[string]interface{}
+	var userResponse map[string]interface{}
 	url := h.BaseURL + "user/" + string(userID)
 	client := &http.Client{}
 
@@ -262,13 +262,37 @@ func (h *UserHandler) UserDetails(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// unmarshal response data
-			err = json.Unmarshal(body, &response)
+			err = json.Unmarshal(body, &userResponse)
 
 		}
 	}
 
+	// get user reservations from api
+	var resResponse map[string]interface{}
+	url = h.BaseURL + "reservation/" + "user/all/" + string(userID)
+
+	if req, err := http.NewRequest("GET", url, nil); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &resResponse)
+
+		}
+	}
+
+	log.Print(resResponse)
+
 	// Render user details
-	if err := templates.Templates.ExecuteTemplate(w, "profile.html", response); err != nil {
+	if err := templates.Templates.ExecuteTemplate(w, "profile.html", map[string]interface{}{
+		"user":        userResponse,
+		"reservation": resResponse,
+	}); err != nil {
 		http.Error(w, "Template render error", http.StatusInternalServerError)
 	}
 }
