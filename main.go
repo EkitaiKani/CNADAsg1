@@ -62,11 +62,11 @@ func main() {
 	r.HandleFunc("/cancel/{id}", resHandler.CancelReservation).Methods("POST")
 	r.HandleFunc("/reserve/now/{id}", resHandler.ReserveNow).Methods("POST")
 	r.HandleFunc("/reserve/user/{id}", resHandler.ReservationDetails).Methods("POST")
-
+	r.HandleFunc("/reserve/completed", resHandler.CompletedReservations).Methods("GET")
+	r.HandleFunc("/reserve/end/{id}", resHandler.EndReservation).Methods("POST")
 
 	// Payment routes
-	r.HandleFunc("/payment", paymentHandler.Payments).Methods("POST")
-
+	r.HandleFunc("/payment/{id}", paymentHandler.Payment).Methods("GET")
 
 	// Start server
 	log.Println("Server starting on :8080")
