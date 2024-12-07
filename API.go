@@ -46,8 +46,10 @@ func main() {
 	r.HandleFunc("/api/v1/reservation/car/{id}", resAPI.CarReservations).Methods("GET")
 	r.HandleFunc("/api/v1/reservation/available-times", resAPI.GetAvailableTimes).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/reservation/", resAPI.CreateReservation).Methods("POST")
+	r.HandleFunc("/api/v1/reservation/update/{id}", resAPI.UpdateStatus).Methods("PUT")
 
-	// Apply CORS middleware
+
+	// Apply CORS middleware for JS
 	corsHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),                             // Allow all origins (use specific ones for security)
 		handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"}),        // Allowed HTTP methods
