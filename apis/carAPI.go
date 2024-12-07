@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"CNADASG1/models"
 	"CNADASG1/services"
 
 	"github.com/gorilla/mux"
@@ -85,6 +86,64 @@ func (h *CarAPI) CarDetails(w http.ResponseWriter, r *http.Request) {
 			"car":     car,
 			"error":   false,
 			"message": "",
+		}
+
+	}
+
+	// Secure HTTP headers
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+	w.Header().Set("X-XSS-Protection", "1; mode=block")
+
+	// Encode the response and handle errors
+	if err := json.NewEncoder(w).Encode(jsonBody); err != nil {
+		log.Println("JSON encoding error:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+
+}
+
+func (h *CarAPI) UpdateCarStatus(w http.ResponseWriter, r *http.Request) {
+	// Get car id from URL
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	// Handle error if converting id fails
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Decode the incoming JSON request body
+	var c *models.Car
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&c); err != nil {
+		log.Println("JSON decoding error:", err)
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	c.CarId = id
+
+	// Get car details
+	car, err := h.Service.UpdateCarStatus(c)
+	jsonBody := make(map[string]interface{})
+
+	// log.Print(car.CarModel)
+
+	if err != nil {
+		jsonBody = map[string]interface{}{
+			"message": "Error updating car status, please try again",
+			"error":   true,
+		}
+		log.Print("Internal server error:", err)
+	} else {
+		// Render car details
+		jsonBody = map[string]interface{}{
+			"car":     car,
+			"error":   false,
+			"message": "Car status updated",
 		}
 
 	}

@@ -39,6 +39,8 @@ func main() {
 	// Car routes
 	r.HandleFunc("/api/v1/car/", carAPI.Cars).Methods("GET")
 	r.HandleFunc("/api/v1/car/{id}", carAPI.CarDetails).Methods("GET")
+	r.HandleFunc("/api/v1/car/{id}", carAPI.UpdateCarStatus).Methods("PUT")
+
 
 	// Reservation routes
 	r.HandleFunc("/api/v1/reservation/user/all/{id}", resAPI.AllReservations).Methods("GET")

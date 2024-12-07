@@ -223,8 +223,9 @@ func (h *ReserveHandler) PostReservation(w http.ResponseWriter, r *http.Request)
 	res := &models.Reservation{
 		CarId:  carId,
 		UserId: userId,
-		Start:  endDate,
-		End:    startDate,
+		Start:  startDate,
+		End:    endDate,
+		Status: "Pending",
 	}
 
 	var response map[string]interface{}
@@ -304,6 +305,96 @@ func (h *ReserveHandler) CancelReservation(w http.ResponseWriter, r *http.Reques
 	log.Print(response["error"])
 	log.Print(response["message"])
 
+	http.Redirect(w, r, "/reserve/user", http.StatusSeeOther)
+}
 
+func (h *ReserveHandler) ReserveNow(w http.ResponseWriter, r *http.Request) {
+	// If the method is POST, handle form submission
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	session, err := store.Get(r, "user-session")
+	userID, ok := session.Values["user_id"].(string)
+	if !ok {
+		// If the user_id is not found or has an incorrect type
+		// log.Print(session.Values["user_id"]) // For debugging
+		http.Error(w, "User not logged in", http.StatusUnauthorized)
+		return
+	}
+
+	// Get car id from URL
+	vars := mux.Vars(r)
+	CaridStr := vars["id"]
+	id, err := strconv.Atoi(CaridStr)
+	// Handle error if converting id fails
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	userId, _ := strconv.Atoi(userID)
+
+	// Set the hours and minutes from the timeStr into the baseTime
+	startTime := time.Now()
+	startDate := sql.NullTime{
+		Time:  startTime, // This is your combined date and time
+		Valid: true,      // Set it to true if it's a valid date
+	}
+
+	res := &models.Reservation{
+		CarId:  id,
+		UserId: userId,
+		Start:  startDate,
+		Status: "Confirmed",
+	}
+
+	var resResponse map[string]interface{}
+	url := h.BaseURL + "reservation/"
+	client := &http.Client{}
+	postBody, _ := json.Marshal(res)
+	resBody := bytes.NewBuffer(postBody)
+
+	if req, err := http.NewRequest("POST", url, resBody); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &resResponse)
+
+		}
+	}
+
+	// update the car status
+	car := &models.Car{
+		Status: "Reserved",
+	}
+
+	var carResponse map[string]interface{}
+	url = h.BaseURL + "car/" + CaridStr
+	postBody, _ = json.Marshal(car)
+	resBody = bytes.NewBuffer(postBody)
+
+	if req, err := http.NewRequest("PUT", url, resBody); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &carResponse)
+
+		}
+	}
+	// Redirect to the user reservation page after the operation
 	http.Redirect(w, r, "/reserve/user", http.StatusSeeOther)
 }

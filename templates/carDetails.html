@@ -73,8 +73,9 @@
 
     <!-- main content goes here -->
     <main>
+      <section class="vh-100">
       {{if not .Error}}
-      <div class="container product-page vh-100">
+      <div class="container product-page">
         <div class="row product-details">
           <!-- Car Image Section -->
           <div class="col-md-6 text-center">
@@ -118,11 +119,20 @@
                   View Availability
                 </button>
               </form>
+
+              <form action="/reserve/now/{{ .car.id }}" method="POST">
+                <input type="hidden" id="get-id" name="id" value="{{ .car.id }}" />
+                <button type="submit" class="btn btn-info btn-lg">
+                  Book Now
+                </button>
+              </form>
             </div>
           </div>
         </div>
+      </section>
 
         <hr />
+
 
         <!-- Car Features Section -->
         <div class="row features-list">

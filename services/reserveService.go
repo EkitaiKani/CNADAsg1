@@ -312,8 +312,8 @@ func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation
 func (s *ReserveService) CreateReservation(res *models.Reservation) (*models.Reservation, error) {
 
 	// Prepare the SQL INSERT statement
-	query := "INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime) VALUES (?, ?, ?, ?)"
-	result, err := s.DB.Exec(query, res.UserId, res.CarId, res.Start, res.End)
+	query := "INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status) VALUES (?, ?, ?, ?, ?)"
+	result, err := s.DB.Exec(query, res.UserId, res.CarId, res.Start, res.End, res.Status)
 	if err != nil {
 		log.Println("Database insert error:", err)
 		return nil, err

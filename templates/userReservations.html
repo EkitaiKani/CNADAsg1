@@ -68,15 +68,17 @@
                   </p>
 
                   <div>
-                    <a href="reserve/{{ $key }}" class="btn btn-info btn-sm"
-                      >View</a
-                    >
+                    <a href="/{{ $key }}" class="btn btn-info btn-sm">View</a>
 
-                    <a
-                      href="reserve/cancel/{{ $key }}"
-                      class="btn btn-danger btn-sm me-2"
-                      >Cancel</a
+                    <form
+                      action="/cancel/{{ $key }}"
+                      method="POST"
+                      style="display: inline"
                     >
+                      <button type="submit" class="btn btn-danger btn-sm me-2">
+                        Cancel
+                      </button>
+                    </form>
                   </div>
                 </div>
 

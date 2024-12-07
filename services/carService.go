@@ -102,3 +102,15 @@ func (s *CarService) GetCarDetails(id int) (*models.Car, error) {
 
 	return u, nil
 }
+
+func (s *CarService) UpdateCarStatus(car *models.Car) (*models.Car, error) {
+	// Prepare the SQL INSERT statement
+	query := "UPDATE cars SET Status = ? WHERE car_id = ?"
+	_, err := s.DB.Exec(query, car.Status, car.CarId)
+	if err != nil {
+		log.Println("Database update error:", err)
+		return nil, err
+	}
+
+	return car, nil
+}
