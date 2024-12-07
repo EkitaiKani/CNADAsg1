@@ -240,13 +240,10 @@ func (s *ReserveService) GetAllReservations(id int) (map[int]models.Reservation,
 
 // fetches Reserve details for the Reserves page
 func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation, error) {
-	// create dictionary to store Reservations
+	// create a dictionary to store Reservations
 	resList := make(map[int]models.Reservation)
 
-	// create car obj to store care detail
-	var c *models.Car
-
-	// Get Reservations
+	// Get Reservations query
 	query := "SELECT reservation_id, car_id, start_datetime, end_datetime, status FROM reservations WHERE user_id = ? AND status NOT IN ('Cancelled', 'Completed') ORDER BY start_datetime DESC"
 	rows, err := s.DB.Query(query, id)
 	if err != nil {
@@ -255,10 +252,12 @@ func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation
 	}
 	defer rows.Close()
 
+	// Iterate over each row
 	for rows.Next() {
 		r := models.Reservation{}
 		var start, end sql.NullString
 
+		// Scan the reservation data
 		if err := rows.Scan(&r.ReservationId, &r.CarId, &start, &end, &r.Status); err != nil {
 			log.Printf("Row scan error: %v", err)
 			return nil, err
@@ -284,14 +283,18 @@ func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation
 			r.End = sql.NullTime{Time: parsedTime, Valid: true}
 		}
 
-		// get user details
-		query := "SELECT car_model, license_plate, current_location, charge_level, rate FROM cars WHERE car_id = ?"
-		err := s.DB.QueryRow(query, r.CarId).Scan(&c.CarModel, &c.LiscencePlate, &c.CurrLoc, &c.Charge, &c.Rate)
+		// Create a new Car object to store car details
+		c := &models.Car{}
+
+		// Get car details based on the car_id
+		carQuery := "SELECT car_model, license_plate, current_location, charge_level, rate FROM cars WHERE car_id = ?"
+		err := s.DB.QueryRow(carQuery, r.CarId).Scan(&c.CarModel, &c.LiscencePlate, &c.CurrLoc, &c.Charge, &c.Rate)
 		if err != nil {
-			log.Println("Row scan error:", err)
+			log.Println("Row scan error for car details:", err)
 			return nil, err
 		}
 
+		// Attach car details to the reservation
 		c.CarId = r.CarId
 		r.CarDetails = c
 
@@ -299,12 +302,13 @@ func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation
 		resList[r.ReservationId] = r
 	}
 
-	// Check for errors during iteration
+	// Check for any errors during rows iteration
 	if err := rows.Err(); err != nil {
 		log.Printf("Rows iteration error: %v", err)
 		return nil, err
 	}
 
+	// Return the map containing reservations
 	return resList, nil
 }
 
@@ -348,87 +352,87 @@ func (s *ReserveService) UpdateReservationStatus(res *models.Reservation) (*mode
 
 // GetReserveDetails retrieves details of a reservation by id
 func (s *ReserveService) GetReservationDetails(id int) (*models.Reservation, error) {
-    // Declare variables
-    var r models.Reservation
-    var start, end sql.NullString
+	// Declare variables
+	var r models.Reservation
+	var start, end sql.NullString
 
-    // Query to fetch reservation details
-    query := "SELECT reservation_id, car_id, start_datetime, end_datetime, status FROM reservations WHERE reservation_id = ?"
-    err := s.DB.QueryRow(query, id).Scan(&r.ReservationId, &r.CarId, &start, &end, &r.Status)
+	// Query to fetch reservation details
+	query := "SELECT reservation_id, car_id, start_datetime, end_datetime, status FROM reservations WHERE reservation_id = ?"
+	err := s.DB.QueryRow(query, id).Scan(&r.ReservationId, &r.CarId, &start, &end, &r.Status)
 
-    // Handle query error (e.g., no rows found)
-    if err != nil {
-        if err == sql.ErrNoRows {
-            log.Println("No reservation found with ID:", id)
-            return nil, nil // or return an error depending on your requirement
-        }
-        log.Println("Query error:", err)
-        return nil, err
-    }
+	// Handle query error (e.g., no rows found)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Println("No reservation found with ID:", id)
+			return nil, nil // or return an error depending on your requirement
+		}
+		log.Println("Query error:", err)
+		return nil, err
+	}
 
-    // Parse start datetime
-    if start.Valid {
-        parsedTime, err := time.Parse("2006-01-02 15:04:05", start.String)
-        if err != nil {
-            log.Printf("Start datetime parse error: %v", err)
-            return nil, err
-        }
-        r.Start = sql.NullTime{Time: parsedTime, Valid: true}
-    }
+	// Parse start datetime
+	if start.Valid {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", start.String)
+		if err != nil {
+			log.Printf("Start datetime parse error: %v", err)
+			return nil, err
+		}
+		r.Start = sql.NullTime{Time: parsedTime, Valid: true}
+	}
 
-    // Parse end datetime
-    if end.Valid {
-        parsedTime, err := time.Parse("2006-01-02 15:04:05", end.String)
-        if err != nil {
-            log.Printf("End datetime parse error: %v", err)
-            return nil, err
-        }
-        r.End = sql.NullTime{Time: parsedTime, Valid: true}
-    }
+	// Parse end datetime
+	if end.Valid {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", end.String)
+		if err != nil {
+			log.Printf("End datetime parse error: %v", err)
+			return nil, err
+		}
+		r.End = sql.NullTime{Time: parsedTime, Valid: true}
+	}
 
-    // Create a new instance of models.Car
-    u := &models.Car{CarId: r.CarId}
+	// Create a new instance of models.Car
+	u := &models.Car{CarId: r.CarId}
 	var lastServiced string
 
-    // Get car details from the database
-    query = "SELECT car_model, license_plate, status, current_location, charge_level, cleanliness_status, last_serviced, rate FROM cars WHERE car_id = ?"
-    err = s.DB.QueryRow(query, r.CarId).Scan(
-        &u.CarModel,     // car_model
-        &u.LiscencePlate, // license_plate (fixed typo)
-        &u.Status,       // status
-        &u.CurrLoc,      // current_location
-        &u.Charge,       // charge_level
-        &u.Cleanliness,  // cleanliness_status
-        &lastServiced,   // last_serviced
-        &u.Rate,         // rate
-    )
+	// Get car details from the database
+	query = "SELECT car_model, license_plate, status, current_location, charge_level, cleanliness_status, last_serviced, rate FROM cars WHERE car_id = ?"
+	err = s.DB.QueryRow(query, r.CarId).Scan(
+		&u.CarModel,      // car_model
+		&u.LiscencePlate, // license_plate (fixed typo)
+		&u.Status,        // status
+		&u.CurrLoc,       // current_location
+		&u.Charge,        // charge_level
+		&u.Cleanliness,   // cleanliness_status
+		&lastServiced,    // last_serviced
+		&u.Rate,          // rate
+	)
 
-    // Handle scan error
-    if err != nil {
-        if err == sql.ErrNoRows {
-            // No rows found for the given car ID
-            log.Println("No car found with ID:", r.CarId)
-            return nil, nil
-        }
-        // Other query error
-        log.Println("Row scan error:", err)
-        return nil, err
-    }
+	// Handle scan error
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// No rows found for the given car ID
+			log.Println("No car found with ID:", r.CarId)
+			return nil, nil
+		}
+		// Other query error
+		log.Println("Row scan error:", err)
+		return nil, err
+	}
 
-    // Parse the last serviced date
-    if lastServiced != "" {
-        parsedTime, err := time.Parse("2006-01-02 15:04:05", lastServiced)
-        if err != nil {
-            log.Printf("Last serviced datetime parse error: %v", err)
-            return nil, err
-        }
-        u.LastServiced = sql.NullTime{Time: parsedTime, Valid: true}
-    } else {
-        u.LastServiced = sql.NullTime{Valid: false} // Handle NULL case
-    }
+	// Parse the last serviced date
+	if lastServiced != "" {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", lastServiced)
+		if err != nil {
+			log.Printf("Last serviced datetime parse error: %v", err)
+			return nil, err
+		}
+		u.LastServiced = sql.NullTime{Time: parsedTime, Valid: true}
+	} else {
+		u.LastServiced = sql.NullTime{Valid: false} // Handle NULL case
+	}
 
-    // Attach car details to reservation
-    r.CarDetails = u
+	// Attach car details to reservation
+	r.CarDetails = u
 
-    return &r, nil
+	return &r, nil
 }
