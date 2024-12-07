@@ -49,6 +49,7 @@ func main() {
 	r.HandleFunc("/api/v1/reservation/available-times", resAPI.GetAvailableTimes).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/reservation/", resAPI.CreateReservation).Methods("POST")
 	r.HandleFunc("/api/v1/reservation/update/{id}", resAPI.UpdateStatus).Methods("PUT")
+	r.HandleFunc("/api/v1/reservation/{id}", resAPI.ReservationDetails).Methods("GET")
 
 
 	// Apply CORS middleware for JS

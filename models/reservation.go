@@ -10,5 +10,5 @@ type Reservation struct {
 	Start         sql.NullTime `json:"startTime"`
 	End           sql.NullTime `json:"endTime"`
 	Status        string       `json: status`
-	CarDetails    Car          `json:"car_details"`
+	CarDetails    *Car          `json:"car_details"`
 }

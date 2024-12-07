@@ -244,7 +244,7 @@ func (s *ReserveService) GetUserReservations(id int) (map[int]models.Reservation
 	resList := make(map[int]models.Reservation)
 
 	// create car obj to store care detail
-	var c models.Car
+	var c *models.Car
 
 	// Get Reservations
 	query := "SELECT reservation_id, car_id, start_datetime, end_datetime, status FROM reservations WHERE user_id = ? AND status NOT IN ('Cancelled', 'Completed') ORDER BY start_datetime DESC"
@@ -344,4 +344,91 @@ func (s *ReserveService) UpdateReservationStatus(res *models.Reservation) (*mode
 	}
 
 	return res, nil
+}
+
+// GetReserveDetails retrieves details of a reservation by id
+func (s *ReserveService) GetReservationDetails(id int) (*models.Reservation, error) {
+    // Declare variables
+    var r models.Reservation
+    var start, end sql.NullString
+
+    // Query to fetch reservation details
+    query := "SELECT reservation_id, car_id, start_datetime, end_datetime, status FROM reservations WHERE reservation_id = ?"
+    err := s.DB.QueryRow(query, id).Scan(&r.ReservationId, &r.CarId, &start, &end, &r.Status)
+
+    // Handle query error (e.g., no rows found)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            log.Println("No reservation found with ID:", id)
+            return nil, nil // or return an error depending on your requirement
+        }
+        log.Println("Query error:", err)
+        return nil, err
+    }
+
+    // Parse start datetime
+    if start.Valid {
+        parsedTime, err := time.Parse("2006-01-02 15:04:05", start.String)
+        if err != nil {
+            log.Printf("Start datetime parse error: %v", err)
+            return nil, err
+        }
+        r.Start = sql.NullTime{Time: parsedTime, Valid: true}
+    }
+
+    // Parse end datetime
+    if end.Valid {
+        parsedTime, err := time.Parse("2006-01-02 15:04:05", end.String)
+        if err != nil {
+            log.Printf("End datetime parse error: %v", err)
+            return nil, err
+        }
+        r.End = sql.NullTime{Time: parsedTime, Valid: true}
+    }
+
+    // Create a new instance of models.Car
+    u := &models.Car{CarId: r.CarId}
+	var lastServiced string
+
+    // Get car details from the database
+    query = "SELECT car_model, license_plate, status, current_location, charge_level, cleanliness_status, last_serviced, rate FROM cars WHERE car_id = ?"
+    err = s.DB.QueryRow(query, r.CarId).Scan(
+        &u.CarModel,     // car_model
+        &u.LiscencePlate, // license_plate (fixed typo)
+        &u.Status,       // status
+        &u.CurrLoc,      // current_location
+        &u.Charge,       // charge_level
+        &u.Cleanliness,  // cleanliness_status
+        &lastServiced,   // last_serviced
+        &u.Rate,         // rate
+    )
+
+    // Handle scan error
+    if err != nil {
+        if err == sql.ErrNoRows {
+            // No rows found for the given car ID
+            log.Println("No car found with ID:", r.CarId)
+            return nil, nil
+        }
+        // Other query error
+        log.Println("Row scan error:", err)
+        return nil, err
+    }
+
+    // Parse the last serviced date
+    if lastServiced != "" {
+        parsedTime, err := time.Parse("2006-01-02 15:04:05", lastServiced)
+        if err != nil {
+            log.Printf("Last serviced datetime parse error: %v", err)
+            return nil, err
+        }
+        u.LastServiced = sql.NullTime{Time: parsedTime, Valid: true}
+    } else {
+        u.LastServiced = sql.NullTime{Valid: false} // Handle NULL case
+    }
+
+    // Attach car details to reservation
+    r.CarDetails = u
+
+    return &r, nil
 }
