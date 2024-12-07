@@ -22,11 +22,13 @@ func main() {
 	userService := &services.UserService{DB: db}
 	carService := &services.CarService{DB: db}
 	resService := &services.ReserveService{DB: db}
+	payService := &services.PaymentService{DB: db}
 
 	// Initialize apis
 	userAPI := &apis.UserAPI{Service: userService}
 	carAPI := &apis.CarAPI{Service: carService}
 	resAPI := &apis.ReserveAPI{Service: resService}
+	payAPI := &apis.PaymentAPI{Service: payService}
 
 	// Create router
 	r := mux.NewRouter()
@@ -41,7 +43,6 @@ func main() {
 	r.HandleFunc("/api/v1/car/{id}", carAPI.CarDetails).Methods("GET")
 	r.HandleFunc("/api/v1/car/{id}", carAPI.UpdateCarStatus).Methods("PUT")
 
-
 	// Reservation routes
 	r.HandleFunc("/api/v1/reservation/user/all/{id}", resAPI.AllReservations).Methods("GET")
 	r.HandleFunc("/api/v1/reservation/user/{id}", resAPI.UserReservations).Methods("GET")
@@ -50,7 +51,12 @@ func main() {
 	r.HandleFunc("/api/v1/reservation/", resAPI.CreateReservation).Methods("POST")
 	r.HandleFunc("/api/v1/reservation/update/{id}", resAPI.UpdateStatus).Methods("PUT")
 	r.HandleFunc("/api/v1/reservation/{id}", resAPI.ReservationDetails).Methods("GET")
+	r.HandleFunc("/api/v1/reservation/completed/{id}", resAPI.CompletedReservations).Methods("GET")
+	r.HandleFunc("/api/v1/reservation/end/{id}", resAPI.EndReservation).Methods("PUT")
 
+	// Payment routes
+	r.HandleFunc("/api/v1/payment/res/", payAPI.CreatePayment).Methods("POST")
+	r.HandleFunc("/api/v1/payment/{id}", payAPI.PaymentDetails).Methods("GET")
 
 	// Apply CORS middleware for JS
 	corsHandler := handlers.CORS(

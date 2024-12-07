@@ -15,6 +15,7 @@ import (
 	"CNADASG1/models"
 	"CNADASG1/templates"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -431,4 +432,178 @@ func (h *ReserveHandler) ReservationDetails(w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (h *ReserveHandler) CompletedReservations(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "user-session")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Retrieve the user ID as a string from session
+	userID, ok := session.Values["user_id"].(string)
+	if !ok {
+		// If the user_id is not found or has an incorrect type
+		// log.Print(session.Values["user_id"]) // For debugging
+		http.Error(w, "User not logged in", http.StatusUnauthorized)
+		return
+	}
+
+	// get reservation details
+	var response map[string]interface{}
+	url := h.BaseURL + "reservation/completed/" + userID
+	// log.Print(url)
+	client := &http.Client{}
+
+	if req, err := http.NewRequest("GET", url, nil); err == nil {
+		if res, err := client.Do(req); err == nil {
+
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &response)
+
+		}
+	}
+
+	// Render cars
+	if err := templates.Templates.ExecuteTemplate(w, "completedRes.html", response); err != nil {
+		http.Error(w, "Template render error", http.StatusInternalServerError)
+	}
+
+}
+
+func (h *ReserveHandler) EndReservation(w http.ResponseWriter, r *http.Request) {
+
+	session, err := store.Get(r, "user-session")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Retrieve the user ID as a string from session
+	userID, ok := session.Values["user_id"].(string)
+	if !ok {
+		// If the user_id is not found or has an incorrect type
+		// log.Print(session.Values["user_id"]) // For debugging
+		http.Error(w, "User not logged in", http.StatusUnauthorized)
+		return
+	}
+
+	userid, err := strconv.Atoi(userID)
+
+	// Handle error if converting id fails
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// If the method is POST, handle form submission
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get res id from URL
+	vars := mux.Vars(r)
+	resIdStr := vars["id"]
+	id, err := strconv.Atoi(resIdStr)
+
+	// Handle error if converting id fails
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	res := &models.Reservation{
+		ReservationId: id,
+		Status:        "Completed",
+	}
+
+	var resResponse map[string]interface{}
+	url := h.BaseURL + "reservation/end/" + resIdStr
+	// log.Print(url)
+
+	client := &http.Client{}
+	postBody, _ := json.Marshal(res)
+	resBody := bytes.NewBuffer(postBody)
+
+	if req, err := http.NewRequest("PUT", url, resBody); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &resResponse)
+
+		}
+	}
+
+	if resResponse["error"] == true {
+		log.Print(resResponse["message"])
+	}
+
+	pay := &models.Payment{
+		ReservationId: res.ReservationId,
+		UserId:        userid,
+		TransactionId: uuid.New().String(),
+	}
+
+	// create a new payment record
+	var payResponse map[string]interface{}
+	url = h.BaseURL + "payment/res/"
+	// log.Print(url)
+	//log.Print(pay)
+
+	postBody, _ = json.Marshal(pay)
+	resBody = bytes.NewBuffer(postBody)
+
+	if req, err := http.NewRequest("POST", url, resBody); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &payResponse)
+
+		}
+	}
+
+	if resResponse["error"] == true {
+		log.Print(resResponse["message"])
+	}
+
+	// log.Print(payResponse)
+
+	paymentData, ok := payResponse["pay"].(map[string]interface{})
+	if !ok {
+		fmt.Errorf("invalid payment data structure")
+	}
+
+	payId, ok := paymentData["id"].(string)
+	if !ok {
+		// Try converting from float64 to string
+		if floatId, ok := paymentData["id"].(float64); ok {
+			payId = strconv.FormatFloat(floatId, 'f', 0, 64)
+		} else {
+			fmt.Errorf("unable to convert payment ID to string")
+		}
+	}
+
+	redirect := "/payment/" + payId
+
+	http.Redirect(w, r, redirect, http.StatusSeeOther)
 }

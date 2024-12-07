@@ -20,7 +20,7 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS cars;
 DROP TABLE IF EXISTS reservations;
 DROP TABLE IF EXISTS pricing;
-DROP TABLE IF EXISTS payment;
+DROP TABLE IF EXISTS payments;
 
 /**=======Table:  users=======**/ 
 CREATE TABLE users (
@@ -50,20 +50,6 @@ CREATE TABLE cars (
     rate INT													-- hourly rate of the car
 );
 
-/**=======Table:  rentals=======**/ 
-CREATE TABLE rentals (
-    rental_id INT AUTO_INCREMENT PRIMARY KEY,              -- Unique rental identifier
-    user_id INT,                                           -- Foreign key referencing the users table
-    car_id INT,                                        -- Foreign key referencing the vehicles table
-    start_datetime DATETIME,                               -- Start date and time of the rental
-    end_datetime DATETIME,                                 -- End date and time of the rental
-    total_amount DECIMAL(10, 2),                            -- Total amount after discount
-    status ENUM('Pending', 'Completed', 'Cancelled') DEFAULT 'Pending', -- Rental status
-    FOREIGN KEY (user_id) REFERENCES users(user_id),       -- Foreign key referencing the users table
-    FOREIGN KEY (car_id) REFERENCES cars(car_id) -- Foreign key referencing the vehicles table
-);
-
-
 /**=======Table:  reservations=======**/ 
 CREATE TABLE reservations (
     reservation_id INT AUTO_INCREMENT PRIMARY KEY,           -- Unique identifier for the reservation
@@ -71,30 +57,30 @@ CREATE TABLE reservations (
     car_id INT,												 -- Reference to the car being reserved
     start_datetime DATETIME,                                 -- Start date and time of the reservation
     end_datetime DATETIME,                                   -- End date and time of the reservation
-    status ENUM('Pending', 'Confirmed', 'Cancelled', 'Completed') DEFAULT 'Pending', -- Status of the reservation
+    status ENUM('Pending', 'Confirmed', 'Ongoing', 'Cancelled', 'Completed') DEFAULT 'Pending', -- Status of the reservation
     FOREIGN KEY (user_id) REFERENCES users(user_id),         -- Foreign key referencing the users table
     FOREIGN KEY (car_id) REFERENCES cars(car_id)			 -- Foreign key referencing the cars table
 );
 
-/**=======Table:  pricing=======**/ 
-CREATE TABLE pricing (
-    pricing_id INT AUTO_INCREMENT PRIMARY KEY,              -- Unique identifier for pricing record
-    hourly_rate DECIMAL(10, 2),                             -- Hourly rate for the car
-    weekend_rate DECIMAL(10, 2),                            -- Special weekend rate (if applicable)
-    discount_percentage DECIMAL(5, 2) DEFAULT 0            	-- Discount percentage (e.g., 10.00 for 10% discount)
+/**=======Table:  MembershipTiers =======**/ 
+CREATE TABLE MembershipTiers (
+    id INT AUTO_INCREMENT PRIMARY KEY, -- Unique identifier for discount record
+    tier_name VARCHAR(50) NOT NULL, -- name of the tier
+    discount_percentage INT NOT NULL -- Discount percentage (e.g., 10 for 10% discount)
 );
+
 
 /**=======Table:  payment=======**/ 
 CREATE TABLE payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,             	-- Unique payment identifier
-    rental_id INT,                                         	-- Foreign key referencing the rentals table
+    reservation_id INT,                                         	-- Foreign key referencing the rentals table
     user_id INT,                                           	-- Foreign key referencing the users table
-    payment_method ENUM('Credit Card', 'Debit Card', 'PayPal', 'Apple Pay') NOT NULL, -- Payment method
+    payment_method ENUM('Credit Card', 'Debit Card', 'PayPal', 'Apple Pay', 'Pending'), -- Payment method
     payment_status ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending', -- Payment status
     amount DECIMAL(10, 2),                                  -- Amount paid
 	transaction_id CHAR(36) NOT NULL,						-- unique identifier for transaction, i.e. guids
     payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,       -- Date and time of the payment
-    FOREIGN KEY (rental_id) REFERENCES rentals(rental_id), 	-- Foreign key referencing the rentals table
+    FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id), 	-- Foreign key referencing the rentals table
     FOREIGN KEY (user_id) REFERENCES users(user_id)        	-- Foreign key referencing the users table
 );
 
@@ -117,16 +103,21 @@ VALUES (1, 1, '2024-12-01 09:00:00', '2024-12-01 17:00:00', 100.00, 'Completed')
 
 /** Creating Records for Table reservations **/
 INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status)
-VALUES (1, 1, '2024-12-01 10:00:00', '2024-12-01 14:00:00', 'Confirmed');
+VALUES (7, 7, '2024-12-01 10:00:00', '2024-12-01 14:00:00', '');
+
+INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status)
+VALUES (2, 1, '2024-12-07 20:00:00', '2024-12-07 21:00:00', 'Confirmed');
+
 
 /** Creating Records for Table pricing **/
 INSERT INTO pricing (hourly_rate, weekend_rate, discount_percentage)
 VALUES (25.00, 30.00, 10.00);
 
 /** Creating Records for Table payment **/
-INSERT INTO payments (rental_id, user_id, payment_method, payment_status, amount, transaction_id)
-VALUES (1, 1, 'Credit Card', 'Completed', 150.00, 'f47ac10b-58cc-4372-a567-0e02b2c3d479');
+INSERT INTO payments (reservation_id, user_id, payment_method, payment_status, amount, transaction_id)
+VALUES (1, 2, 'Credit Card', 'Completed', 150.00, 'f47ac10b-58cc-4372-a567-0e02b2c3d479');
 
+use ECarShare;
 
 select*from users;
 select*from cars;
@@ -134,3 +125,9 @@ select*from rentals;
 select*from reservations;
 select*from payments;
 select*from pricing;
+
+SELECT reservation_id, start_datetime, end_datetime FROM reservations WHERE user_id = 1 AND status NOT IN ('Cancelled', 'Completed') ORDER BY start_datetime ASC
+
+
+update reservations set status = 'Completed' where reservation_id = 1
+SELECT reservation_id, start_datetime, end_datetime FROM reservations WHERE user_id = 1 AND status NOT IN ('Cancelled', 'Completed')

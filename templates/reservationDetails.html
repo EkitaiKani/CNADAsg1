@@ -2,14 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <title>Drivachu</title>
     <link rel="icon" href="Images/.res.png" type="image/x-icon" />
-
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,14 +21,11 @@
       href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500&display=swap"
       rel="stylesheet"
     />
-
     <script
       src="https://kit.fontawesome.com/593851244e.js"
       crossorigin="anonymous"
     ></script>
-
     <link rel="stylesheet" href="/static/css/mdb.min.css" />
-
     <style>
       .card-header {
         background-color: #007bff;
@@ -84,11 +77,11 @@
                 </tr>
                 <tr>
                   <th>Start Time</th>
-                  <td>{{.res.startTime.Time}}</td>
+                  <td id="startTime">{{.res.startTime.Time}}</td>
                 </tr>
                 <tr>
                   <th>End Time</th>
-                  <td>{{.res.endTime.Time}}</td>
+                  <td id="endTime">{{.res.endTime.Time}}</td>
                 </tr>
                 <tr>
                   <th>Status</th>
@@ -129,16 +122,23 @@
                 </tr>
                 <tr>
                   <th>Last Serviced</th>
-                  <td>
-                    {{if eq .res.car_details.LastServiced.Time
-                    "0001-01-01T00:00:00Z"}} Not Available {{else}}
-                    {{.res.car_details.LastServiced.Time}} {{end}}
+                  <td id="lastServiced">
+                    {{.res.car_details.LastServiced.Time}}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+
+        <!-- Form to End Reservation -->
+        <form action="/reserve/end/{{.res.id}}" method="POST">
+          <!-- Hidden Fields -->
+          <input type="hidden" name="reservationId" value="{{.res.id}}" />
+
+          <!-- End Reservation Button -->
+          <button type="submit" class="btn btn-danger">End Reservation</button>
+        </form>
       </div>
     </main>
 
@@ -165,5 +165,66 @@
       integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
       crossorigin="anonymous"
     ></script>
+
+    <script>
+      // Function to convert ISO date to readable format (YYYY-MM-DD HH:MM:SS)
+      function convertToReadableDate(isoDate) {
+        const date = new Date(isoDate);
+
+        // Convert to Singapore Time (SGT)
+        const sgDate = new Date(
+          date.toLocaleString("en-US", { timeZone: "Asia/Singapore" })
+        );
+
+        const year = sgDate.getFullYear();
+        const month = String(sgDate.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+        const day = String(sgDate.getDate()).padStart(2, "0");
+        const hours = String(sgDate.getHours()).padStart(2, "0");
+        const minutes = String(sgDate.getMinutes()).padStart(2, "0");
+        const seconds = String(sgDate.getSeconds()).padStart(2, "0");
+
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      }
+
+      // JavaScript to handle the logic for checking and replacing the times
+      function updateReservationTimes() {
+        // Start Time
+        const startTimeElement = document.getElementById("startTime");
+        const startTimeValue = startTimeElement.textContent.trim();
+        startTimeElement.textContent = convertToReadableDate(startTimeValue);
+
+        // End Time
+        const endTimeElement = document.getElementById("endTime");
+        const endTimeValue = endTimeElement.textContent.trim();
+
+        // Check if the end time is the "0001-01-01T00:00:00Z" placeholder
+        if (endTimeValue === "0001-01-01T00:00:00Z") {
+          // Replace with the current time
+          const currentTime = convertToReadableDate(new Date().toISOString());
+          endTimeElement.textContent = currentTime;
+        } else {
+          // Otherwise, format the provided end time
+          endTimeElement.textContent = convertToReadableDate(endTimeValue);
+        }
+
+        // Last Serviced Time
+        const lastServicedElement = document.getElementById("lastServiced");
+        const lastServicedValue = lastServicedElement.textContent.trim();
+
+        // Check if the Last Serviced time is the "0001-01-01T00:00:00Z" placeholder
+        if (lastServicedValue === "0001-01-01T00:00:00Z") {
+          // Replace with the current time
+          const currentTime = convertToReadableDate(new Date().toISOString());
+          lastServicedElement.textContent = currentTime;
+        } else {
+          // Otherwise, format the provided Last Serviced time
+          lastServicedElement.textContent =
+            convertToReadableDate(lastServicedValue);
+        }
+      }
+
+      // Call the function to update the times when the page loads
+      window.onload = updateReservationTimes;
+    </script>
   </body>
 </html>

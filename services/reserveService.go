@@ -436,3 +436,93 @@ func (s *ReserveService) GetReservationDetails(id int) (*models.Reservation, err
 
 	return &r, nil
 }
+
+// fetches Reserve details for the Reserves page
+func (s *ReserveService) GetCompletedReservations(id int) (map[int]models.Reservation, error) {
+	// create a dictionary to store Reservations
+	resList := make(map[int]models.Reservation)
+
+	// Get Reservations query
+	query := "SELECT reservation_id, car_id, start_datetime, end_datetime, status FROM reservations WHERE user_id = ? AND status = 'Completed' ORDER BY start_datetime DESC"
+	rows, err := s.DB.Query(query, id)
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Iterate over each row
+	for rows.Next() {
+		r := models.Reservation{}
+		var start, end sql.NullString
+
+		// Scan the reservation data
+		if err := rows.Scan(&r.ReservationId, &r.CarId, &start, &end, &r.Status); err != nil {
+			log.Printf("Row scan error: %v", err)
+			return nil, err
+		}
+
+		// Parse start datetime
+		if start.Valid {
+			parsedTime, err := time.Parse("2006-01-02 15:04:05", start.String)
+			if err != nil {
+				log.Printf("Start datetime parse error: %v", err)
+				return nil, err
+			}
+			r.Start = sql.NullTime{Time: parsedTime, Valid: true}
+		}
+
+		// Parse end datetime
+		if end.Valid {
+			parsedTime, err := time.Parse("2006-01-02 15:04:05", end.String)
+			if err != nil {
+				log.Printf("End datetime parse error: %v", err)
+				return nil, err
+			}
+			r.End = sql.NullTime{Time: parsedTime, Valid: true}
+		}
+
+		// Create a new Car object to store car details
+		c := &models.Car{}
+
+		// Get car details based on the car_id
+		carQuery := "SELECT car_model, license_plate, current_location, charge_level, rate FROM cars WHERE car_id = ?"
+		err := s.DB.QueryRow(carQuery, r.CarId).Scan(&c.CarModel, &c.LiscencePlate, &c.CurrLoc, &c.Charge, &c.Rate)
+		if err != nil {
+			log.Println("Row scan error for car details:", err)
+			return nil, err
+		}
+
+		// Attach car details to the reservation
+		c.CarId = r.CarId
+		r.CarDetails = c
+
+		// Add Reservation to the map
+		resList[r.ReservationId] = r
+	}
+
+	// Check for any errors during rows iteration
+	if err := rows.Err(); err != nil {
+		log.Printf("Rows iteration error: %v", err)
+		return nil, err
+	}
+
+	// Return the map containing reservations
+	return resList, nil
+}
+
+func (s *ReserveService) EndReservation(res *models.Reservation) (*models.Reservation, error) {
+
+	// Ensure we are using the correct time format, in UTC if needed
+	endTime := time.Now()
+
+	// Prepare the SQL UPDATE statement
+	query := "UPDATE reservations SET Status = ?, end_datetime = ? WHERE reservation_id = ?"
+	_, err := s.DB.Exec(query, res.Status, endTime, res.ReservationId)
+	if err != nil {
+		log.Println("Database update error:", err)
+		return nil, err
+	}
+
+	return res, nil
+}
