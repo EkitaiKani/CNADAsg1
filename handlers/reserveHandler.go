@@ -398,3 +398,37 @@ func (h *ReserveHandler) ReserveNow(w http.ResponseWriter, r *http.Request) {
 	// Redirect to the user reservation page after the operation
 	http.Redirect(w, r, "/reserve/user", http.StatusSeeOther)
 }
+
+func (h *ReserveHandler) ReservationDetails(w http.ResponseWriter, r *http.Request) {
+	// Get res id from URL
+	vars := mux.Vars(r)
+	ResidStr := vars["id"]
+
+	var response map[string]interface{}
+	url := h.BaseURL + "reservation/" + ResidStr
+	client := &http.Client{}
+
+	if req, err := http.NewRequest("GET", url, nil); err == nil {
+		if res, err := client.Do(req); err == nil {
+			// You can log the status code here if necessary
+			body, err := ioutil.ReadAll(res.Body)
+
+			if err != nil {
+				log.Print("An error occured")
+			}
+
+			// unmarshal response data
+			err = json.Unmarshal(body, &response)
+
+		}
+	}
+
+	// log.Print(response)
+
+	// Render car details
+	err := templates.Templates.ExecuteTemplate(w, "reservationDetails.html", response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

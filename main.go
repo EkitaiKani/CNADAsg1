@@ -61,6 +61,8 @@ func main() {
 	r.HandleFunc("/reserve/user", resHandler.UserReservations).Methods("GET")
 	r.HandleFunc("/cancel/{id}", resHandler.CancelReservation).Methods("POST")
 	r.HandleFunc("/reserve/now/{id}", resHandler.ReserveNow).Methods("POST")
+	r.HandleFunc("/reserve/user/{id}", resHandler.ReservationDetails).Methods("POST")
+
 
 	// Payment routes
 	r.HandleFunc("/payment", paymentHandler.Payments).Methods("POST")
