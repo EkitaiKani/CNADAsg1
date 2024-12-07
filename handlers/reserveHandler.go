@@ -14,6 +14,8 @@ import (
 
 	"CNADASG1/models"
 	"CNADASG1/templates"
+
+	"github.com/gorilla/mux"
 )
 
 type ReserveHandler struct {
@@ -252,95 +254,34 @@ func (h *ReserveHandler) PostReservation(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (h *ReserveHandler) UpdateReservation(w http.ResponseWriter, r *http.Request) {
+func (h *ReserveHandler) CancelReservation(w http.ResponseWriter, r *http.Request) {
+
 	// If the method is POST, handle form submission
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Parse the form data
-	err := r.ParseForm()
+	// Get res id from URL
+	vars := mux.Vars(r)
+	resIdStr := vars["id"]
+	id, err := strconv.Atoi(resIdStr)
+
+	// Handle error if converting id fails
 	if err != nil {
-		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
-	}
-
-	session, err := store.Get(r, "user-session")
-	userID, ok := session.Values["user_id"].(int)
-	if !ok {
-		// If the user_id is not found or has an incorrect type
-		// log.Print(session.Values["user_id"]) // For debugging
-		http.Error(w, "User not logged in", http.StatusUnauthorized)
-		return
-	}
-
-	// Retrieve form values by their "name" attribute
-	resIdStr := r.FormValue("ResId")
-	userId := userID
-	carIdStr := r.FormValue("CarId")
-	startStr := r.FormValue("Start")
-	endStr := r.FormValue("End")
-
-	log.Print(startStr)
-
-	// Convert UserId to int
-	resId, err := strconv.Atoi(resIdStr)
-	if err != nil {
-		// Handle the error if conversion fails
-		log.Printf("Error converting UserId: %v", err)
-		http.Error(w, "Invalid UserId", http.StatusBadRequest)
-		return
-	}
-
-	// Convert CarId to int
-	carId, err := strconv.Atoi(carIdStr)
-	if err != nil {
-		// Handle the error if conversion fails
-		log.Printf("Error converting CarId: %v", err)
-		http.Error(w, "Invalid CarId", http.StatusBadRequest)
-		return
-	}
-
-	// Try to parse the date string to time.Time
-	var start sql.NullTime
-	var end sql.NullTime
-
-	if startStr != "" {
-		parsedTime, err := time.Parse("2006-01-02 15:04:05", startStr) // Expecting date in "YYYY-MM-DD" format
-		if err != nil {
-			log.Println("Error parsing start time:", err)
-			http.Error(w, "Invalid date format", http.StatusBadRequest)
-			return
-		}
-		start = sql.NullTime{Time: parsedTime, Valid: true} // Mark as valid with parsed time
-	} else {
-		start = sql.NullTime{Valid: false} // If empty, mark as invalid (representing NULL in SQL)
-	}
-
-	if endStr != "" {
-		parsedTime, err := time.Parse("2006-01-02 15:04:05", endStr) // Expecting date in "YYYY-MM-DD" format
-		if err != nil {
-			log.Println("Error parsing end time:", err)
-			http.Error(w, "Invalid date format", http.StatusBadRequest)
-			return
-		}
-		end = sql.NullTime{Time: parsedTime, Valid: true} // Mark as valid with parsed time
-	} else {
-		end = sql.NullTime{Valid: false} // If empty, mark as invalid (representing NULL in SQL)
 	}
 
 	res := &models.Reservation{
-		ReservationId: resId,
-
-		CarId:  carId,
-		UserId: userId,
-		Start:  start,
-		End:    end,
+		ReservationId: id,
+		Status:        "Cancelled",
 	}
 
 	var response map[string]interface{}
-	url := h.BaseURL + "reservation/" + resIdStr
+	url := h.BaseURL + "reservation/update/" + resIdStr
+	// log.Print(url)
+
 	client := &http.Client{}
 	postBody, _ := json.Marshal(res)
 	resBody := bytes.NewBuffer(postBody)
@@ -360,8 +301,9 @@ func (h *ReserveHandler) UpdateReservation(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	renderErr := templates.Templates.ExecuteTemplate(w, "reservation.html", response)
-	if renderErr != nil {
-		http.Error(w, renderErr.Error(), http.StatusInternalServerError)
-	}
+	log.Print(response["error"])
+	log.Print(response["message"])
+
+
+	http.Redirect(w, r, "/reserve/user", http.StatusSeeOther)
 }

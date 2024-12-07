@@ -283,19 +283,21 @@ func (h *ReserveAPI) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Try to create the user using the service
-	createdRes, err := h.Service.UpdateReservationStatus(res)
+	// Try to update using the service
+	updatedRes, err := h.Service.UpdateReservationStatus(res)
+	// log.Print(updatedRes)
+
 	jsonBody := make(map[string]interface{})
 	if err != nil {
 		jsonBody = map[string]interface{}{
-			"message": "Reservation was not updated. Check your input fields and try again.",
+			"message": "Reservation was not updated. Please try again.",
 			"error":   true,
 		}
 		log.Print("Internal server error:", err)
 	} else {
 		// After successful creation, render the user in the template
 		jsonBody = map[string]interface{}{
-			"res":     createdRes,
+			"res":     updatedRes,
 			"message": "Reservation updated successfully",
 			"error":   false,
 		}
