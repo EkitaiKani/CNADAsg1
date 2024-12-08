@@ -57,6 +57,8 @@ func main() {
 	// Payment routes
 	r.HandleFunc("/api/v1/payment/res/", payAPI.CreatePayment).Methods("POST")
 	r.HandleFunc("/api/v1/payment/{id}", payAPI.PaymentDetails).Methods("GET")
+	r.HandleFunc("/api/v1/payment/{id}", payAPI.PaymentDetails).Methods("PUT")
+
 
 	// Apply CORS middleware for JS
 	corsHandler := handlers.CORS(
