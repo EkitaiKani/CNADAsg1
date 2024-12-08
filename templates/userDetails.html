@@ -76,53 +76,6 @@
             </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-6">
-            <div class="card mb-4 mb-md-0">
-              <div class="card-body">
-                <p class="mb-4">
-                  <span class="font-italic me-1">Reservation History</span>
-                </p>
-                {{ if .reservation }}
-                  {{ if .reservation.resList }}
-                      {{ range $key, $res := .reservation.resList }}
-                              <div class="mt-4 mb-1" style="height: 5px">
-                                  <p>{{ $res.endTime.Time }}</p>
-                              </div>
-                      {{ end }}
-                  {{ else }}
-                      <p>No reservations found</p>
-                  {{ end }}
-              {{ end }}
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card mb-4 mb-md-0">
-              <div class="card-body">
-                <p class="mb-4">
-                  <span class="font-italic me-1">Payment History</span>
-                </p>
-                <div class="mb-1" style="height: 5px">
-                  
-                </div>
-
-                <div class="mt-4 mb-1" style="height: 5px">
-
-                </div>
-                <div class="mt-4 mb-1" style="height: 5px">
-
-                </div>
-                <div class="mt-4 mb-1" style="height: 5px">
-
-                </div>
-                <div class="mt-4 mb-1" style="height: 5px">
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>

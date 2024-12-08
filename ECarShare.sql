@@ -95,11 +95,13 @@ VALUES ('john.doe@example.com', 'hashed_password_example', 'Premium', 'John', 'D
 
 /** Creating Records for Table cars **/
 INSERT INTO cars (car_model, license_plate, status, current_location, charge_level, cleanliness_status, last_serviced, rate)
-VALUES ('Tesla Model S', 'XYZ1234AB', 'Available', '40.7128° N, 74.0060° W', 85, 'Clean', '2024-11-01 14:30:00', 15);
-
-/** Creating Records for Table rentals **/
-INSERT INTO rentals (user_id, car_id, start_datetime, end_datetime, total_amount, status)
-VALUES (1, 1, '2024-12-01 09:00:00', '2024-12-01 17:00:00', 100.00, 'Completed');
+VALUES
+('Tesla Model S', 'XYZ1234AB', 'Available', '40.7128° N, 74.0060° W', 85, 'Clean', '2024-11-01 14:30:00', 15),
+('Honda Civic', 'ABC5678CD', 'Reserved', '34.0522° N, 118.2437° W', 90, 'Clean', '2024-10-15 09:00:00', 10),
+('Ford Mustang', 'LMN1234OP', 'In Maintenance', '51.5074° N, 0.1278° W', 75, 'Needs Cleaning', '2024-09-10 18:00:00', 20),
+('Chevrolet Bolt', 'DEF2345GH', 'Available', '37.7749° N, 122.4194° W', 100, 'Clean', '2024-08-05 11:30:00', 18),
+('BMW 3 Series', 'JKL3456MN', 'Unavailable', '48.8566° N, 2.3522° E', 50, 'Dirty', '2024-07-20 13:15:00', 25),
+('Audi Q5', 'PQR9876ST', 'Reserved', '52.3676° N, 4.9041° E', 65, 'Clean', '2024-10-30 12:00:00', 22);
 
 /** Creating Records for Table reservations **/
 INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status)
@@ -109,14 +111,16 @@ INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status)
 VALUES (2, 1, '2024-12-07 20:00:00', '2024-12-07 21:00:00', 'Confirmed');
 
 
-/** Creating Records for Table pricing **/
-INSERT INTO pricing (hourly_rate, weekend_rate, discount_percentage)
-VALUES (25.00, 30.00, 10.00);
-
 /** Creating Records for Table payment **/
 INSERT INTO payments (reservation_id, user_id, payment_method, payment_status, amount, transaction_id)
 VALUES (1, 2, 'Credit Card', 'Completed', 150.00, 'f47ac10b-58cc-4372-a567-0e02b2c3d479');
 
+INSERT INTO MembershipTiers (tier_name, discount_percentage) 
+VALUES 
+    ('Basic', 0),
+    ('Premium', 5),
+    ('VIP', 10);
+    
 use ECarShare;
 
 select*from users;
@@ -125,9 +129,3 @@ select*from rentals;
 select*from reservations;
 select*from payments;
 select*from pricing;
-
-SELECT reservation_id, start_datetime, end_datetime FROM reservations WHERE user_id = 1 AND status NOT IN ('Cancelled', 'Completed') ORDER BY start_datetime ASC
-
-
-update reservations set status = 'Completed' where reservation_id = 1
-SELECT reservation_id, start_datetime, end_datetime FROM reservations WHERE user_id = 1 AND status NOT IN ('Cancelled', 'Completed')
