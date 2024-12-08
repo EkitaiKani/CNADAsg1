@@ -103,6 +103,7 @@ func (s *PaymentService) CalculatePayment(p models.Payment) (*models.Payment, er
 
 func (s *PaymentService) CreatePayment(pay *models.Payment) (*models.Payment, error) {
 
+	//log.Print(pay)
 	// Prepare the SQL INSERT statement
 	query := "INSERT INTO payments (reservation_id, user_id, amount, transaction_id) VALUES (?, ?, ?, ?)"
 	result, err := s.DB.Exec(query, pay.ReservationId, pay.UserId, pay.AmtPayable, pay.TransactionId)
@@ -131,13 +132,26 @@ func (s *PaymentService) GetPayment(id int) (*models.Payment, error) {
 
 	p.PaymentId = id
 
+	var dateStr string
+
 	// Get Payment record
 	query := "SELECT reservation_id, amount, transaction_id, payment_date FROM payments WHERE payment_id = ?"
-	err := s.DB.QueryRow(query, id).Scan(&p.ReservationId, &p.AmtPayable, &p.TransactionId, &p.Date)
+	err := s.DB.QueryRow(query, id).Scan(&p.ReservationId, &p.AmtPayable, &p.TransactionId, &dateStr)
 	if err != nil {
 		log.Printf("Query error: %v", err)
 		return nil, err
 	}
+
+	var date sql.NullTime
+	if dateStr != "" {
+		date.Time, err = time.Parse("2006-01-02 15:04:05", dateStr)
+		if err != nil {
+			log.Printf("Error parsing start time: %v", err)
+			return nil, err
+		}
+	}
+
+	p.Date = date
 
 	// create res var
 	var r models.Reservation

@@ -26,7 +26,7 @@ func (h *PaymentAPI) CreatePayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//log.Print(u)
+	// log.Print(u)
 
 	var err error
 	//calculate amount

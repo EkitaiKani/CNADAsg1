@@ -79,20 +79,20 @@
                 <!-- Calculated Price -->
                 <div class="p-2 d-flex">
                   <div class="col-8">Calculated Price</div>
-                  <div class="ms-auto" id="calculated-price">$0.00</div>
+                  <div class="ms-auto" id="calculated-price">{{ .payment.TotalAmount }}</div>
                 </div>
 
                 <!-- Discount (Blank for now) -->
                 <div class="p-2 d-flex">
                   <div class="col-8">Discount(s)</div>
-                  <div class="ms-auto" id="discounts">$0.00</div>
+                  <div class="ms-auto" id="discounts">SGD {{ .payment.Discount }}</div>
                 </div>
 
                 <!-- Total -->
                 <div class="border-top px-2 mx-2"></div>
                 <div class="p-2 d-flex pt-3">
                   <div class="col-8"><b>Total Amount</b></div>
-                  <div class="ms-auto" id="total-price"><b>$0.00</b></div>
+                  <div class="ms-auto" id="total-price"><b>SGD {{ .payment.AmtPayable }}</b></div>
                 </div>
 
                 <!-- Price Calculation Explanation Below Total -->

@@ -103,14 +103,6 @@ VALUES
 ('BMW 3 Series', 'JKL3456MN', 'Unavailable', '48.8566° N, 2.3522° E', 50, 'Dirty', '2024-07-20 13:15:00', 25),
 ('Audi Q5', 'PQR9876ST', 'Reserved', '52.3676° N, 4.9041° E', 65, 'Clean', '2024-10-30 12:00:00', 22);
 
-/** Creating Records for Table reservations **/
-INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status)
-VALUES (7, 7, '2024-12-01 10:00:00', '2024-12-01 14:00:00', '');
-
-INSERT INTO reservations (user_id, car_id, start_datetime, end_datetime, status)
-VALUES (2, 1, '2024-12-07 20:00:00', '2024-12-07 21:00:00', 'Confirmed');
-
-
 /** Creating Records for Table payment **/
 INSERT INTO payments (reservation_id, user_id, payment_method, payment_status, amount, transaction_id)
 VALUES (1, 2, 'Credit Card', 'Completed', 150.00, 'f47ac10b-58cc-4372-a567-0e02b2c3d479');
@@ -125,7 +117,7 @@ use ECarShare;
 
 select*from users;
 select*from cars;
-select*from rentals;
+select*from MembershipTiers;
 select*from reservations;
 select*from payments;
-select*from pricing;
+

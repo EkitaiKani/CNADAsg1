@@ -534,7 +534,7 @@ func (h *ReserveHandler) EndReservation(w http.ResponseWriter, r *http.Request) 
 
 	var resResponse map[string]interface{}
 	url := h.BaseURL + "reservation/end/" + resIdStr
-	// log.Print(url)
+	log.Print(url)
 
 	client := &http.Client{}
 	postBody, _ := json.Marshal(res)
@@ -569,7 +569,7 @@ func (h *ReserveHandler) EndReservation(w http.ResponseWriter, r *http.Request) 
 	var payResponse map[string]interface{}
 	url = h.BaseURL + "payment/res/"
 	// log.Print(url)
-	//log.Print(pay)
+	// log.Print(pay)
 
 	postBody, _ = json.Marshal(pay)
 	resBody = bytes.NewBuffer(postBody)
@@ -593,7 +593,7 @@ func (h *ReserveHandler) EndReservation(w http.ResponseWriter, r *http.Request) 
 		log.Print(resResponse["message"])
 	}
 
-	// log.Print(payResponse)
+	log.Print(payResponse)
 
 	paymentData, ok := payResponse["pay"].(map[string]interface{})
 	if !ok {
@@ -609,6 +609,8 @@ func (h *ReserveHandler) EndReservation(w http.ResponseWriter, r *http.Request) 
 			fmt.Errorf("unable to convert payment ID to string")
 		}
 	}
+
+	log.Print(payId)
 
 	redirect := "/payment/" + payId
 
