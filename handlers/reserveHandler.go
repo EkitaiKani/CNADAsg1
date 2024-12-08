@@ -520,9 +520,16 @@ func (h *ReserveHandler) EndReservation(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Create a sql.NullTime from current time
+	currentTime := sql.NullTime{
+		Time:  time.Now(),
+		Valid: true,
+	}
+
 	res := &models.Reservation{
 		ReservationId: id,
 		Status:        "Completed",
+		End:           currentTime,
 	}
 
 	var resResponse map[string]interface{}

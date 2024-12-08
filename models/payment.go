@@ -9,8 +9,10 @@ type Payment struct {
 	UserId        int          `json:"userId"`
 	Method        string       `json:"method"`
 	Status        string       `json: status`
-	Amount        float32      `json: amount`
+	TotalAmount   float32      `json: amount`
 	TransactionId string       `json:"transactionId"`
 	Date          sql.NullTime `json: dateCompleted`
 	Reservation   Reservation  `json: reservation`
+	Discount      float32      `json: discount`
+	AmtPayable    float32      `json: amtPay`
 }

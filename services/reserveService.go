@@ -340,8 +340,8 @@ func (s *ReserveService) CreateReservation(res *models.Reservation) (*models.Res
 func (s *ReserveService) UpdateReservationStatus(res *models.Reservation) (*models.Reservation, error) {
 
 	// Prepare the SQL INSERT statement
-	query := "UPDATE reservations SET Status = ? WHERE reservation_id = ?"
-	_, err := s.DB.Exec(query, res.Status, res.ReservationId)
+	query := "UPDATE reservations SET Status = ?, end_datetime = ? WHERE reservation_id = ?"
+	_, err := s.DB.Exec(query, res.Status, res.End, res.ReservationId)
 	if err != nil {
 		log.Println("Database update error:", err)
 		return nil, err

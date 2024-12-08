@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"math"
 	"time"
 )
 
@@ -12,39 +13,37 @@ type PaymentService struct {
 	DB *sql.DB
 }
 
-func (s *PaymentService) CalculatePayment(id int) (*float32, error) {
+func (s *PaymentService) CalculatePayment(p models.Payment) (*models.Payment, error) {
 
 	// Define start, end, carId, and userId
-	var start, end sql.NullTime
+	var startStr, endStr string
 	var carId, userId int
+
+	//log.Print(id)
 
 	// Get total time and carId from reservation
 	query := "SELECT user_id, start_datetime, end_datetime, car_id FROM reservations WHERE reservation_id = ?"
-	err := s.DB.QueryRow(query, id).Scan(&userId, &start, &end, &carId)
+	err := s.DB.QueryRow(query, p.ReservationId).Scan(&userId, &startStr, &endStr, &carId)
 	if err != nil {
 		log.Printf("Error retrieving reservation: %v", err)
 		return nil, err
 	}
 
-	// Handle invalid or missing datetime fields
-	if !start.Valid {
-		log.Println("Invalid start datetime")
-		return nil, fmt.Errorf("invalid start datetime")
-	}
-	if !end.Valid {
-		// If end is invalid, use the current time as the end time
-		end.Time = time.Now()
-		end.Valid = true
+	var start, end sql.NullTime
+	if startStr != "" {
+		start.Time, err = time.Parse("2006-01-02 15:04:05", startStr)
+		if err != nil {
+			log.Printf("Error parsing start time: %v", err)
+			return nil, err
+		}
 	}
 
-	// Convert SQL NULL datetime to time.Time (if necessary)
-	if start.Valid && start.Time.IsZero() {
-		log.Println("Invalid start time detected: zero time value")
-		return nil, fmt.Errorf("start time is invalid")
-	}
-	if end.Valid && end.Time.IsZero() {
-		log.Println("Invalid end time detected: zero time value")
-		return nil, fmt.Errorf("end time is invalid")
+	if endStr != "" {
+		end.Time, err = time.Parse("2006-01-02 15:04:05", endStr)
+		if err != nil {
+			log.Printf("Error parsing end time: %v", err)
+			return nil, err
+		}
 	}
 
 	// Calculate the duration between start and end times
@@ -54,6 +53,8 @@ func (s *PaymentService) CalculatePayment(id int) (*float32, error) {
 		log.Println("End time is before start time")
 		return nil, fmt.Errorf("end time is before start time")
 	}
+
+	//log.Print(duration)
 
 	// Get rate for car
 	var rate int
@@ -85,19 +86,26 @@ func (s *PaymentService) CalculatePayment(id int) (*float32, error) {
 		return nil, err
 	}
 
+	p.TotalAmount = totalPayment
+
 	// Apply discount if applicable
 	discountAmt := totalPayment * float32(discount) / 100 // Divide by 100 to get the percentage
 	totalPayment = totalPayment - discountAmt
 
+	// Round up to 2 decimal places
+	roundedPayment := math.Round(float64(totalPayment)*100) / 100
+	p.AmtPayable = float32(roundedPayment)
+	p.Discount = discountAmt
+
 	// Return the total payment as a pointer to float32
-	return &totalPayment, nil
+	return &p, nil
 }
 
 func (s *PaymentService) CreatePayment(pay *models.Payment) (*models.Payment, error) {
 
 	// Prepare the SQL INSERT statement
 	query := "INSERT INTO payments (reservation_id, user_id, amount, transaction_id) VALUES (?, ?, ?, ?)"
-	result, err := s.DB.Exec(query, pay.ReservationId, pay.UserId, pay.Amount, pay.TransactionId)
+	result, err := s.DB.Exec(query, pay.ReservationId, pay.UserId, pay.AmtPayable, pay.TransactionId)
 	if err != nil {
 		log.Println("Database insert error:", err)
 		return nil, err
@@ -121,9 +129,11 @@ func (s *PaymentService) GetPayment(id int) (*models.Payment, error) {
 	// create var to store Payment
 	var p models.Payment
 
+	p.PaymentId = id
+
 	// Get Payment record
-	query := "SELECT reservation_id, amount FROM payments WHERE payment_id = ?"
-	err := s.DB.QueryRow(query, id).Scan(&p.ReservationId, &p.Amount)
+	query := "SELECT reservation_id, amount, transaction_id, payment_date FROM payments WHERE payment_id = ?"
+	err := s.DB.QueryRow(query, id).Scan(&p.ReservationId, &p.AmtPayable, &p.TransactionId, &p.Date)
 	if err != nil {
 		log.Printf("Query error: %v", err)
 		return nil, err
@@ -209,4 +219,20 @@ func (s *PaymentService) GetPayment(id int) (*models.Payment, error) {
 	p.Reservation = r
 
 	return &p, nil
+}
+
+func (s *PaymentService) MakePayment(pay models.Payment) (*models.Payment, error) {
+
+	// Ensure we are using the correct time format, in UTC if needed
+	paymentDate := time.Now()
+
+	// Prepare the SQL UPDATE statement
+	query := "UPDATE payments SET Status = ?, payment_method = ?, payment_date = ? WHERE reservation_id = ?"
+	_, err := s.DB.Exec(query, pay.Status, pay.Method, paymentDate)
+	if err != nil {
+		log.Println("Database update error:", err)
+		return nil, err
+	}
+
+	return &pay, nil
 }

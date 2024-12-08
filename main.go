@@ -67,6 +67,8 @@ func main() {
 
 	// Payment routes
 	r.HandleFunc("/payment/{id}", paymentHandler.Payment).Methods("GET")
+	r.HandleFunc("/payment/success/{id}", paymentHandler.ViewReceipt).Methods("GET")
+	r.HandleFunc("/payment/success/{id}", paymentHandler.MakePayment).Methods("POST")
 
 	// Start server
 	log.Println("Server starting on :8080")

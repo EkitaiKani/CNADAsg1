@@ -286,7 +286,7 @@ func (h *UserHandler) UserDetails(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Print(resResponse)
+	// log.Print(resResponse)
 
 	// Render user details
 	if err := templates.Templates.ExecuteTemplate(w, "profile.html", map[string]interface{}{
